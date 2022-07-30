@@ -1,0 +1,24 @@
+<launch>
+  <!-- tf -->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_baselink" args="0 0 0 0 0 0 map base_link 100" />
+
+  <!-- map server -->
+  <arg name="map_file" default="$(find mobile_robot_simulator)/map/glbmap.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" output="screen"/>
+  
+  <!-- robot description -->
+  <arg name="model" default="$(find mobile_robot_simulator)/urdf/mobile_robot.urdf"/>
+  <arg name="gui" default="False"/>
+  
+  <!--path publish /path-->
+  <node pkg="mobile_robot_simulator" name="path_publisher" type="path_publisher.py" output="screen"/>
+
+  <!--<param name="robot_description" textfile="$(arg model)" />-->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+  <param name="use_gui" value="$(arg gui)"/>
+ 
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mobile_robot_simulator)/rviz/display_mobile_robot.rviz" required="true"/>
+</launch>
