@@ -6,14 +6,19 @@
 #include <geometry_msgs/Pose.h>
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include <math.h>
+
+#include <boost/date_time.hpp>
 
 class Odom_Publisher
 {
     private:
         ros::NodeHandle nh;
-		ros::Publisher odom_pub;
-		ros::Subscriber cmd_vel_sub;
+        ros::Publisher odom_pub;
+        ros::Subscriber cmd_vel_sub;
         // timet set
         ros::Time current_time = ros::Time::now();
         ros::Time last_time    = ros::Time::now();
@@ -35,7 +40,11 @@ class Odom_Publisher
         float angular_z = 0.0;  //[rad/s]
         // odometry publish
         void update_odometry();
-        void calc_quat_to_rpy(geometry_msgs::Quaternion geometry_quat, float& roll, float& pitch, float& yaw);
+        // waypoint file
+        std::ofstream csv_savefile;
+        std::string waypoint_file = "path_0731.csv";
+        std::string csv_file_path = "~/catkin_ws/src/mobile_robot_simulator/path/" + waypoint_file;
+        //std::string csv_file_path = "path_0731.csv";
 };
 
 Odom_Publisher::Odom_Publisher()
@@ -126,14 +135,24 @@ void Odom_Publisher::update_odometry()
     odom_to_baselink_trans.transform.translation.z = odom.pose.pose.position.z;
     odom_to_baselink_trans.transform.rotation = updated_orientation;
     odom_to_baselink_broadcaster.sendTransform(odom_to_baselink_trans);
+    
+    // save csv file
+    std::ofstream savefile(csv_file_path.c_str(), std::ios::out);
 
+    savefile << odom.pose.pose.position.x << ","
+             << odom.pose.pose.position.y << ","
+             << odom.pose.pose.position.z << ","
+             << odom.pose.pose.orientation.x << ","
+             << odom.pose.pose.orientation.y << ","
+             << odom.pose.pose.orientation.z << ","
+             << odom.pose.pose.orientation.w << std::endl;
     last_time = current_time;
 }
 
 int main(int argc, char**argv)
 {
     ros::init(argc, argv, "odom_publisher");
-
+    
     Odom_Publisher odom_publisher;
     ros::Rate loop_rate(50);
 	while(ros::ok()){
