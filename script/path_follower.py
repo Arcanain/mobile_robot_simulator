@@ -148,7 +148,7 @@ class Simple_path_follower():
                 if (target_yaw) > (self.current_yaw_euler):
                     yaw_rate = yaw_rate * (-1.0)
 
-            print(yaw_diff*180/math.pi,target_yaw*180/math.pi,self.current_yaw_euler*180/math.pi)
+            #print(yaw_diff*180/math.pi,target_yaw*180/math.pi,self.current_yaw_euler*180/math.pi)
 
             #Set Cmdvel
             cmd_vel = Twist()
