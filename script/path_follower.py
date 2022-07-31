@@ -7,7 +7,7 @@ import math
 import rospy
 import tf
 from geometry_msgs.msg import PoseStamped, Twist
-from std_msgs.msg import Header
+from std_msgs.msg import Int32
 from visualization_msgs.msg import Marker
 from nav_msgs.msg import Path, Odometry
 
@@ -25,7 +25,7 @@ class Simple_path_follower():
         self.r = rospy.Rate(50)  # 50hz
 
         self.target_speed = 1.0             #target speed [km/h]
-        self.target_LookahedDist = 0.25      #Lookahed distance for Pure Pursuit[m]
+        self.target_LookahedDist = 0.1      #Lookahed distance for Pure Pursuit[m]
 
         #first flg (for subscribe global path topic)
         self.path_first_flg = False
@@ -36,6 +36,7 @@ class Simple_path_follower():
         #initialize publisher
         self.cmdvel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=50)
         self.lookahed_pub = rospy.Publisher("/lookahed_marker", Marker, queue_size=50)
+        self.targetwp_num_pub = rospy.Publisher("/targetwp_num", Int32, queue_size=10)
 
         #initialize subscriber
         self.path_sub = rospy.Subscriber("/path", Path, self.cb_get_path_topic_subscriber)
@@ -99,6 +100,8 @@ class Simple_path_follower():
                     else:
                         break
             self.last_indx = min_indx
+            #print(min_indx)
+            self.targetwp_num_pub.publish(min_indx)
 
             #check goal
             if self.pass_flg_np[self.path_x_np.shape[0]-1] == 1:

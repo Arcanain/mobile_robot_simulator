@@ -126,6 +126,9 @@ include_directories(
 add_executable(odom_publisher src/odom_publisher.cpp)
 target_link_libraries(odom_publisher ${catkin_LIBRARIES})
 
+add_executable(waypoint_visualizer src/waypoint_visualizer.cpp)
+target_link_libraries(waypoint_visualizer ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mobile_robot_simulator.cpp
