@@ -25,7 +25,7 @@ class Simple_path_follower():
         self.r = rospy.Rate(50)  # 50hz
 
         self.target_speed = 1.0             #target speed [km/h]
-        self.target_LookahedDist = 0.5      #Lookahed distance for Pure Pursuit[m]
+        self.target_LookahedDist = 0.25      #Lookahed distance for Pure Pursuit[m]
 
         #first flg (for subscribe global path topic)
         self.path_first_flg = False
