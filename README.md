@@ -2,6 +2,7 @@
 mobile_robot_simulator
 
 ## display_mobile_robot
+display urdf mobile robot  
 
 ```
 roslaunch mobile_robot_simulator display_mobile_robot.launch 
@@ -18,3 +19,11 @@ roslaunch mobile_robot_simulator display_mobile_robot.launch
 ```
 roslaunch mobile_robot_simulator odom_publisher.launch 
 ```
+
+## display_path
+display path  
+
+```
+roslaunch mobile_robot_simulator display_path.launch 
+```
+![display_path](https://user-images.githubusercontent.com/52307432/182168050-873b5ae5-7954-4cb4-bd00-67c43b07aca0.png)
