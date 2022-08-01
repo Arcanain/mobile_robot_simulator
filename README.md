@@ -1,5 +1,8 @@
 # mobile_robot_simulator
-mobile_robot_simulator
+
+## Environment
+OS : raspbian(buster)  
+ROS : noetic  
 
 ## display_mobile_robot
 display urdf mobile robot  
