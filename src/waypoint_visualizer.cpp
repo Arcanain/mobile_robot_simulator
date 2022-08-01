@@ -18,9 +18,6 @@ class Waypoint_Visualizer
         // publisher
         ros::Publisher marker_pub;
         ros::Publisher markerText_pub;
-
-        ros::Publisher test_pub;
-
         // subscriber
         ros::Subscriber path_sub;
         ros::Subscriber targetwp_num_sub;   
@@ -35,10 +32,8 @@ class Waypoint_Visualizer
         double text_size = 0.1 * markerSize;
         visualization_msgs::MarkerArray marker_array;
         visualization_msgs::MarkerArray markerText_array;
-
         visualization_msgs::MarkerArray marker_empty_array;
-        //visualization_msgs::Marker marker;
-
+        visualization_msgs::MarkerArray markerText_empty_array;
     public:
         Waypoint_Visualizer();
         ~Waypoint_Visualizer();
@@ -58,9 +53,6 @@ Waypoint_Visualizer::Waypoint_Visualizer()
     //publisher
     marker_pub = nh.advertise<visualization_msgs::MarkerArray>("/waypoint/marker", 10);
     markerText_pub = nh.advertise<visualization_msgs::MarkerArray>("/waypoint/markerText", 10);
-
-    test_pub = nh.advertise<visualization_msgs::Marker>("/waypoint/test", 10);
-
     //subscriber
     path_sub = nh.subscribe("/path", 10, &Waypoint_Visualizer::path_callback, this);
     targetwp_num_sub = nh.subscribe("/targetwp_num", 10, &Waypoint_Visualizer::targetwp_num_callback, this);
@@ -90,11 +82,11 @@ void Waypoint_Visualizer::targetwp_num_callback(const std_msgs::Int32 &targetwp_
 
 void Waypoint_Visualizer::marker_publish()
 {   
-    
     for (int i = 0; i < path.poses.size(); i++) {
         visualization_msgs::Marker marker;
         visualization_msgs::Marker markerText;
-
+        
+        // marker set
         marker.header.frame_id = path.header.frame_id;
         marker.header.stamp = ros::Time::now();
         marker.ns = "waypoint_marker";
@@ -119,33 +111,33 @@ void Waypoint_Visualizer::marker_publish()
             marker.color = gray;
         }
         
+        // markerText set
+        markerText.header.frame_id = path.header.frame_id;
+        markerText.header.stamp = ros::Time::now();
+        markerText.ns = "waypoint_marker";
+        markerText.id = i;
+        markerText.lifetime = ros::Duration();
+        markerText.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+        markerText.scale.x = text_size;
+        markerText.scale.y = text_size;
+        markerText.scale.z = text_size;
+        markerText.pose = path.poses.at(i).pose;
+        markerText.pose.position.z+=marker_height;
+        markerText.text= std::to_string(i).c_str();
+        markerText.color = black;
+
+        // push back array
         if (i == targetwp_num - 1 || i == targetwp_num || i == targetwp_num + 1) {
             marker_array.markers.push_back(marker);
+            markerText_array.markers.push_back(markerText);
         }
-        //marker_array.markers.push_back(marker);
     }
 
     marker_pub.publish(marker_array);
+    markerText_pub.publish(markerText_array);
     // marker_array to empty
     marker_array = marker_empty_array;
-    
-    /*
-    visualization_msgs::Marker marker;
-
-    marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time::now();
-    marker.ns = "waypoint_marker";
-    marker.id = 0;
-    marker.lifetime = ros::Duration();
-    marker.type = visualization_msgs::Marker::CYLINDER;
-    marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = marker_diameter;
-    marker.scale.y = marker_diameter;
-    marker.scale.z = marker_height;
-    marker.pose = path.poses.at(0).pose;
-    marker.color = red;
-    test_pub.publish(marker);
-    */
+    markerText_array = markerText_empty_array;
 }
 
 std_msgs::ColorRGBA Waypoint_Visualizer::set_color(double r, double g, double b, double a)
