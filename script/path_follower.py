@@ -164,7 +164,7 @@ class Simple_path_follower():
             self.cmdvel_pub.publish(cmd_vel)
 
             #publish maker
-            self.publish_lookahed_marker(target_lookahed_x,target_lookahed_y,target_yaw)
+            #self.publish_lookahed_marker(target_lookahed_x,target_lookahed_y,target_yaw)
             #print("cmd_vel_update")
             self.r.sleep()
             return
