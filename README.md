@@ -37,11 +37,8 @@ pure pursuit path follower
 ```
 roslaunch mobile_robot_simulator path_follower.launch 
 ```
-![path_follow1](https://user-images.githubusercontent.com/52307432/182168329-f190ba82-16b3-47f0-85ca-231e9f843560.png)
+![path_follow1](https://user-images.githubusercontent.com/52307432/182187253-4bdcf24b-0b0f-45e6-9cd5-a005cde5e2ea.png)
 
-![path_follow2](https://user-images.githubusercontent.com/52307432/182168375-15313e38-5899-4273-9651-89570f47e7d1.png)
+![path_follow2](https://user-images.githubusercontent.com/52307432/182187282-0fecded3-3b22-4015-b535-5aa34d71e3f9.png)
 
-![path_follow3](https://user-images.githubusercontent.com/52307432/182168403-7cb4e24b-2b3c-45bf-8bfe-1ac3356c29ec.png)
-
-
-
+![path_follow3](https://user-images.githubusercontent.com/52307432/182187301-95ec9489-c267-47ad-95e5-e4f695890f81.png)
