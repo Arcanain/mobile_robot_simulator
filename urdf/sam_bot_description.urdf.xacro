@@ -58,7 +58,7 @@
     <xacro:box_inertia m="15" w="${base_width}" d="${base_length}" h="${base_height}"/>
   </link>
   
-  <!-- Robot Footprint -->
+   <!-- Robot Footprint -->
   <link name="base_footprint">
   	<xacro:box_inertia m="0" w="0" d="0" h="0"/>
   </link>
@@ -68,7 +68,7 @@
     <child link="base_footprint"/>
     <origin xyz="0.0 0.0 ${-(wheel_radius+wheel_zoff)}" rpy="0 0 0"/>
   </joint>
- 
+
   <!-- Wheels -->
   <xacro:macro name="wheel" params="prefix x_reflect y_reflect">
     <link name="${prefix}_link">
@@ -150,14 +150,31 @@
     <child link="imu_link"/>
     <origin xyz="0 0 0.01"/>
   </joint>
-    
+
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>data</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu/data</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+<!--
   <gazebo reference="imu_link">
     <sensor name="imu_sensor" type="imu">
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-        <ros>
-          <namespace>/demo</namespace>
-          <remapping>~/out:=imu</remapping>
-        </ros>
+         <topicName>imu/data</topicName>
         <initial_orientation_as_reference>false</initial_orientation_as_reference>
       </plugin>
       <always_on>true</always_on>
@@ -219,7 +236,8 @@
       </imu>
     </sensor>
   </gazebo>
- 
+-->
+
   <gazebo>
     <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
       <ros>
@@ -301,10 +319,8 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
-        <ros>
-          <remapping>~/out:=scan</remapping>
-        </ros>
+      <plugin name="scan" filename="libgazebo_ros_laser.so">
+        <topicName>/scan</topicName>
         <output_type>sensor_msgs/LaserScan</output_type>
         <frame_name>lidar_link</frame_name>
       </plugin>
