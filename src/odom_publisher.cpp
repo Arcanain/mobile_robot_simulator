@@ -110,6 +110,9 @@ void Odom_Publisher::update_odometry()
     odom.child_frame_id = "base_link";
     odom_pub.publish(odom);
 
+    /*************************************/
+    /* map to base_link for mobile_robot */
+    /*************************************/
     // update /map to /odom transform
     geometry_msgs::Quaternion map_to_odom_quat = tf::createQuaternionMsgFromYaw(0.0);
     map_to_odom_trans.header.stamp = current_time;
