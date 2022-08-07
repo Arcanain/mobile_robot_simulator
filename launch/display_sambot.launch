@@ -1,6 +1,6 @@
 <launch>
   <!-- tf -->
-  <node pkg="tf" type="static_transform_publisher" name="map_to_baselink" args="0 0 0 0 0 0 map base_link 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_to_baselink" args="0 0 0.15 0 0 0 map base_link 100" />
 
   <!-- map server -->
   <arg name="map_file" default="$(find mobile_robot_simulator)/map/glbmap.yaml"/>
