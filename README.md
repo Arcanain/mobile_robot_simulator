@@ -42,3 +42,6 @@ roslaunch mobile_robot_simulator path_follower.launch
 ![path_follow2](https://user-images.githubusercontent.com/52307432/182187282-0fecded3-3b22-4015-b535-5aa34d71e3f9.png)
 
 ![path_follow3](https://user-images.githubusercontent.com/52307432/182187301-95ec9489-c267-47ad-95e5-e4f695890f81.png)
+
+### video 
+https://user-images.githubusercontent.com/52307432/183284928-a2d0d9b5-49b5-4688-b988-4fa819e89951.mp4
