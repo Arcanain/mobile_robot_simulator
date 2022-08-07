@@ -21,7 +21,7 @@ class Odom_Publisher
         ros::Subscriber cmd_vel_sub;
         // timet set
         ros::Time current_time = ros::Time::now();
-        ros::Time last_time    = ros::Time::now();
+        ros::Time last_time = ros::Time::now();
         float dt = (current_time - last_time).toSec();
         // odometry
         nav_msgs::Odometry odom;
@@ -40,11 +40,6 @@ class Odom_Publisher
         float angular_z = 0.0;  //[rad/s]
         // odometry publish
         void update_odometry();
-        // waypoint file
-        std::ofstream csv_savefile;
-        std::string waypoint_file = "path_0731.csv";
-        std::string csv_file_path = "~/catkin_ws/src/mobile_robot_simulator/path/" + waypoint_file;
-        //std::string csv_file_path = "path_0731.csv";
 };
 
 Odom_Publisher::Odom_Publisher()
@@ -136,16 +131,6 @@ void Odom_Publisher::update_odometry()
     odom_to_baselink_trans.transform.rotation = updated_orientation;
     odom_to_baselink_broadcaster.sendTransform(odom_to_baselink_trans);
     
-    // save csv file
-    std::ofstream savefile(csv_file_path.c_str(), std::ios::out);
-
-    savefile << odom.pose.pose.position.x << ","
-             << odom.pose.pose.position.y << ","
-             << odom.pose.pose.position.z << ","
-             << odom.pose.pose.orientation.x << ","
-             << odom.pose.pose.orientation.y << ","
-             << odom.pose.pose.orientation.z << ","
-             << odom.pose.pose.orientation.w << std::endl;
     last_time = current_time;
 }
 

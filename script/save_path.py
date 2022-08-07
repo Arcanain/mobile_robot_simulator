@@ -53,7 +53,7 @@ class Save_Path():
         # Save CSV path file
         cols = ["x", "y", "z", "w0", "w1", "w2", "w3"]
         df = pd.DataFrame.from_dict(self.path_dict, orient='index',columns=cols)
-        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_0801.csv", index=False)
+        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_0807.csv", index=False)
 
 if __name__ == '__main__':
     print('Save Path is Started...')
