@@ -1,0 +1,53 @@
+<launch>
+  <!-- map server -->
+  <arg name="map_file" default="$(find mobile_robot_simulator)/map/glbmap.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" output="screen"/>
+  
+  <!--odometry publish /odom-->
+  <!--<node pkg="mobile_robot_simulator" name="odom_publisher" type="odom_publisher.py" output="screen"/>-->
+  <node pkg="mobile_robot_simulator" name="odom_publisher" type="odom_publisher" output="screen"/>
+
+  <!--path publish /path-->
+  <node pkg="mobile_robot_simulator" name="path_publisher" type="path_publisher.py" output="screen"/>
+  
+  <!--path follower-->
+  <node pkg="mobile_robot_simulator" name="path_follower" type="path_follower.py" output="screen"/>
+  
+  <!--waypoint visualizer-->
+  <node pkg="mobile_robot_simulator" name="waypoint_visualizer" type="waypoint_visualizer" output="screen"/>
+
+  <!-- roslaunch arguments -->
+  <arg name="paused" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="gui" default="false"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of 
+    the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <!-- <arg name="world_name" value="$(find 2D_Navigation_Stack)/world/space.world"/> -->
+    <!--<arg name="world_name" value="$(find 2D_Navigation_Stack)/world/turtlebot_playground.world"/> -->
+    <arg name="world_name" value="worlds/empty.world" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="use_sim_time" value="true" />
+    <arg name="headless" value="false" />
+  </include>
+
+  <!-- robot description -->
+  <!--<arg name="model" default="$(find mobile_robot_simulator)/urdf/mobile_robot.urdf"/>-->
+  <arg name="model" default="$(find mobile_robot_simulator)/urdf/sam_bot_description.urdf.xacro"/>
+  <!--<arg name="gui" default="False"/>-->
+  
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+  <param name="use_gui" value="$(arg gui)"/>
+ 
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="sam_bot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" 
+    args="-urdf -param robot_description -model sam_bot" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mobile_robot_simulator)/rviz/display_mobile_robot.rviz" required="true"/>
+</launch>
