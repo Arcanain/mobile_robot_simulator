@@ -43,6 +43,7 @@ class Waypoint_Visualizer
         // color set
         std_msgs::ColorRGBA green;
         std_msgs::ColorRGBA red;
+        std_msgs::ColorRGBA blue;
         std_msgs::ColorRGBA gray;
         std_msgs::ColorRGBA black;
         std_msgs::ColorRGBA set_color(double r, double g, double b, double a);
@@ -60,6 +61,7 @@ Waypoint_Visualizer::Waypoint_Visualizer()
     //color set
     green = set_color(0.0, 1.0, 0.0, 1.0);
     red   = set_color(1.0, 0.0, 0.0, 1.0);
+    blue  = set_color(0.0, 0.0, 1.0, 1.0);
     gray  = set_color(0.3, 0.3, 0.3, 1.0);
     black = set_color(0.0, 0.0, 0.0, 1.0);
 }
@@ -104,7 +106,7 @@ void Waypoint_Visualizer::marker_publish()
             marker.color = red;
         }
         if(targetwp_num < i){
-            marker.color = green;
+            marker.color = blue;
         }
         //end target
         if(targetwp_num > i){
