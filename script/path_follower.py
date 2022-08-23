@@ -42,42 +42,6 @@ class Simple_path_follower():
         self.path_sub = rospy.Subscriber("/path", Path, self.cb_get_path_topic_subscriber)
         self.odom_sub = rospy.Subscriber("/odom", Odometry, self.cb_get_odometry_subscriber)
 
-    def publish_lookahed_marker(self,x,y,yaw_euler):
-
-        marker_data = Marker()
-        marker_data.header.frame_id = "map"
-        marker_data.header.stamp = rospy.Time.now()
-
-        marker_data.ns = "my_name_space"
-        marker_data.id = 0
-
-        marker_data.action = Marker.ADD
-
-        marker_data.pose.position.x = x
-        marker_data.pose.position.y = y
-        marker_data.pose.position.z = 0.0
-
-        temp_quaternion = tf.transformations.quaternion_from_euler(0,0,yaw_euler)
-
-        marker_data.pose.orientation.x = temp_quaternion[0]
-        marker_data.pose.orientation.y = temp_quaternion[1]
-        marker_data.pose.orientation.z = temp_quaternion[2]
-        marker_data.pose.orientation.w = temp_quaternion[3]
-
-        marker_data.color.r = 1.0
-        marker_data.color.g = 0.0
-        marker_data.color.b = 0.0
-        marker_data.color.a = 1.0
-
-        marker_data.scale.x = 0.1
-        marker_data.scale.y = 0.1
-        marker_data.scale.z = 0.1
-
-        marker_data.lifetime = rospy.Duration()
-        marker_data.type = 0
-
-        self.lookahed_pub.publish(marker_data)
-
     ###################
     # Update cmd_vel  #
     ###################
@@ -163,9 +127,6 @@ class Simple_path_follower():
             cmd_vel.angular.z = yaw_rate
             self.cmdvel_pub.publish(cmd_vel)
 
-            #publish maker
-            #self.publish_lookahed_marker(target_lookahed_x,target_lookahed_y,target_yaw)
-            #print("cmd_vel_update")
             self.r.sleep()
             return
 

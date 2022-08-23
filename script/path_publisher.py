@@ -6,6 +6,7 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 from nav_msgs.msg import Path
+from std_msgs.msg import Int32
 
 class Path_Publisher():
     def __init__(self):
@@ -23,6 +24,7 @@ class Path_Publisher():
 
         # initialize publisher
         self.path_pub = rospy.Publisher("/path", Path, queue_size = 50)
+        self.path_num_pub = rospy.Publisher("/path_num", Int32, queue_size = 10)
 
     def get_poses_from_csvdata(self):
         poses_list = []
@@ -40,11 +42,12 @@ class Path_Publisher():
             temp_pose.pose.orientation.w = self.csv_data["w3"][index]
 
             poses_list.append(temp_pose)
-        
+
         return poses_list
 
     def publish_path(self):
         self.path_pub.publish(self.path)
+        self.path_num_pub.publish(len(self.csv_data))
 
 if __name__ == '__main__':
     print('Path Publisher is Started...')
