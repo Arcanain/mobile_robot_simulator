@@ -10,8 +10,6 @@
 #include<vector>
 #include<algorithm>
 
-#define SIZE_OF_ARRAY(array)    (sizeof(array)/sizeof(array[0]))
-
 class Pure_Pursuit
 {
     private:
@@ -128,16 +126,17 @@ void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
 void Pure_Pursuit::update_cmd_vel()
 {
     if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
-        std::vector<float> dist_from_current_pos(path_num - 2);
+
+        std::vector<float> dist_from_current_pos;
         for (int index = 0; index < path_num; index++) {
-            dist_from_current_pos.emplace_back(std::sqrt(std::pow((path_x[index] - current_x), 2.0) + std::pow((path_y[index] - current_y), 2.0)));
+            const float dist = std::abs(std::sqrt(std::pow((path_x[index] - current_x), 2.0) + std::pow((path_y[index] - current_y), 2.0)));
+            dist_from_current_pos.push_back(dist);
+            //std::cout << dist_from_current_pos[index] << std::endl;
         }
         std::vector<float>::iterator iter = std::min_element(dist_from_current_pos.begin(), dist_from_current_pos.end());
         size_t min_index = std::distance(dist_from_current_pos.begin(), iter);
         std::cout << min_index << std::endl;
-        //min_indx = dist_from_current_pos.argmin();
         
-        //2022/8/23 min_index motometikedo,motomerreteinai.
     }
 }
 
