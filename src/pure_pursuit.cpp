@@ -28,7 +28,7 @@ class Pure_Pursuit
         bool odom_first_flg = false;
         bool position_search_flg = false;
         int path_num = 0;
-        int last_indx = 0;
+        int last_index = 0;
 
         // for path_callback
         std::vector<float> path_x;
@@ -41,6 +41,8 @@ class Pure_Pursuit
         float current_yaw_euler;
 
         // for publish cmd_vel
+        geometry_msgs::Twist cmd_vel;
+        float goal_th = 5.0;
         //std::vector<float> dist_from_current_pos;
     public:
         Pure_Pursuit();
@@ -56,8 +58,8 @@ class Pure_Pursuit
 
 Pure_Pursuit::Pure_Pursuit()
 {
-    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
-    targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num", 10);
+    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel_pure", 50);
+    targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num2", 10);
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
@@ -135,8 +137,22 @@ void Pure_Pursuit::update_cmd_vel()
         }
         std::vector<float>::iterator iter = std::min_element(dist_from_current_pos.begin(), dist_from_current_pos.end());
         size_t min_index = std::distance(dist_from_current_pos.begin(), iter);
-        std::cout << min_index << std::endl;
+        //std::cout << min_index << std::endl;
+        last_index = static_cast<int>(min_index);
+        //std::cout << last_index << std::endl;
+        // publish target waypoint number
         
+        // check goal
+        float goal_x = path_x[path_num - 1];
+        float goal_y = path_y[path_num - 1];
+        const float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
+        if (goal_dist < goal_th) {
+            std::cout << "Goal!" << std::endl;
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+            cmd_vel_pub.publish(cmd_vel);
+            return;
+        }
     }
 }
 
