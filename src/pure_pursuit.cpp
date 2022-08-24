@@ -10,8 +10,6 @@
 #include <vector>
 #include <algorithm>
 
-#define PI 3.14159265359
-
 class Pure_Pursuit
 {
     private:
@@ -36,7 +34,7 @@ class Pure_Pursuit
         std::vector<float> path_x;
         std::vector<float> path_y;
         std::vector<float> path_st;
-        
+
         // for odom_callback
         float current_x;
         float current_y;
@@ -44,10 +42,11 @@ class Pure_Pursuit
 
         // for publish targetwp_num
         std_msgs::Int32 targetwp_num;
+
         // for publish cmd_vel
         geometry_msgs::Twist cmd_vel;
-        float goal_th = 0.1;
-        float yaw_rate = 0.0;
+        float goal_th = 0.1; //[m]
+        float yaw_rate = 0.0; //[rad/s]
     public:
         Pure_Pursuit();
         ~Pure_Pursuit();
@@ -132,18 +131,17 @@ void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
 void Pure_Pursuit::update_cmd_vel()
 {
     if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
-
+        // calculate path from current position distance
         std::vector<float> dist_from_current_pos;
         for (int index = 0; index < path_num; index++) {
             const float dist = std::abs(std::sqrt(std::pow((path_x[index] - current_x), 2.0) + std::pow((path_y[index] - current_y), 2.0)));
-            dist_from_current_pos.push_back(dist);
-            //std::cout << dist_from_current_pos[index] << std::endl;
+            dist_from_current_pos.emplace_back(dist);
         }
+        // calculate min dist index
         std::vector<float>::iterator iter = std::min_element(dist_from_current_pos.begin(), dist_from_current_pos.end());
         size_t min_index = std::distance(dist_from_current_pos.begin(), iter);
-        //std::cout << min_index << std::endl;
         last_index = static_cast<int>(min_index);
-        //std::cout << last_index << std::endl;
+        
         // publish target waypoint number
         targetwp_num.data = last_index;
         targetwp_num_pub.publish(targetwp_num);
