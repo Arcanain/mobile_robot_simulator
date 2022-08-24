@@ -10,6 +10,8 @@
 #include<vector>
 #include<algorithm>
 
+#define PI 3.14159265359
+
 class Pure_Pursuit
 {
     private:
@@ -43,7 +45,7 @@ class Pure_Pursuit
         // for publish cmd_vel
         geometry_msgs::Twist cmd_vel;
         float goal_th = 5.0;
-        //std::vector<float> dist_from_current_pos;
+        float yaw_rate = 0.0;
     public:
         Pure_Pursuit();
         ~Pure_Pursuit();
@@ -153,6 +155,42 @@ void Pure_Pursuit::update_cmd_vel()
             cmd_vel_pub.publish(cmd_vel);
             return;
         }
+
+        // calculate target point
+        float dist_sp_from_nearest = 0.0;
+        float target_lookahed_x = path_x[last_index];
+        float target_lookahed_y = path_y[last_index];
+        for (int index = last_index; index < path_num; index++) {
+            dist_sp_from_nearest = path_st[index] - path_st[last_index];
+            if (dist_sp_from_nearest > target_LookahedDist) {
+                target_lookahed_x = path_x[index];
+                target_lookahed_y = path_y[index];
+                break;
+            }
+        }
+        //std::cout << target_lookahed_x << std::endl;
+        //std::cout << target_lookahed_y << std::endl;
+
+        // calculate target yaw rate
+        float target_yaw = std::atan2(target_lookahed_y - current_y, target_lookahed_x - current_x);
+        float yaw_diff = target_yaw - current_yaw_euler;
+        /*if (yaw_diff > M_PI) {
+            
+            yaw_diff = yaw_diff % 3.1f;
+        } else if (yaw_diff < -PI) {
+
+        }*/
+
+        float alpha = dist_sp_from_nearest / (target_speed / 3.6f);
+        if (alpha != 0) {
+            yaw_rate = std::abs(yaw_diff) / alpha;
+        } else {
+            yaw_rate = 0.0;
+        }
+        //std::cout << yaw_rate << std::endl;
+
+        // check vehicle orientation and target yaw
+        
     }
 }
 
