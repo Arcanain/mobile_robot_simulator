@@ -7,8 +7,8 @@
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Int32.h>
 #include <math.h>
-#include<vector>
-#include<algorithm>
+#include <vector>
+#include <algorithm>
 
 #define PI 3.14159265359
 
@@ -36,12 +36,14 @@ class Pure_Pursuit
         std::vector<float> path_x;
         std::vector<float> path_y;
         std::vector<float> path_st;
-
+        
         // for odom_callback
         float current_x;
         float current_y;
         float current_yaw_euler;
 
+        // for publish targetwp_num
+        std_msgs::Int32 targetwp_num;
         // for publish cmd_vel
         geometry_msgs::Twist cmd_vel;
         float goal_th = 0.1;
@@ -61,7 +63,7 @@ class Pure_Pursuit
 Pure_Pursuit::Pure_Pursuit()
 {
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
-    targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num2", 10);
+    targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num", 10);
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
@@ -143,7 +145,9 @@ void Pure_Pursuit::update_cmd_vel()
         last_index = static_cast<int>(min_index);
         //std::cout << last_index << std::endl;
         // publish target waypoint number
-        
+        targetwp_num.data = last_index;
+        targetwp_num_pub.publish(targetwp_num);
+
         // check goal
         float goal_x = path_x[path_num - 1];
         float goal_y = path_y[path_num - 1];
