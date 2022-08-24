@@ -137,6 +137,7 @@ void Pure_Pursuit::update_cmd_vel()
             const float dist = std::abs(std::sqrt(std::pow((path_x[index] - current_x), 2.0) + std::pow((path_y[index] - current_y), 2.0)));
             dist_from_current_pos.emplace_back(dist);
         }
+        
         // calculate min dist index
         std::vector<float>::iterator iter = std::min_element(dist_from_current_pos.begin(), dist_from_current_pos.end());
         size_t min_index = std::distance(dist_from_current_pos.begin(), iter);
@@ -170,18 +171,17 @@ void Pure_Pursuit::update_cmd_vel()
                 break;
             }
         }
-        //std::cout << target_lookahed_x << std::endl;
-        //std::cout << target_lookahed_y << std::endl;
 
         // calculate target yaw rate
         float target_yaw = std::atan2(target_lookahed_y - current_y, target_lookahed_x - current_x);
         float yaw_diff = target_yaw - current_yaw_euler;
-        /*if (yaw_diff > M_PI) {
-            
-            yaw_diff = yaw_diff % 3.1f;
-        } else if (yaw_diff < -PI) {
-
-        }*/
+        // float/double型の割り算の余りを求める方法【浮動小数点数の剰余】
+        // https://marycore.jp/prog/c-lang/modulo-floating-point-number/
+        if (yaw_diff > M_PI) {
+            yaw_diff = fmod(yaw_diff, M_PI);
+        } else if (yaw_diff < -M_PI) {
+            yaw_diff = fmod(yaw_diff, -M_PI);
+        }
 
         float alpha = dist_sp_from_nearest / (target_speed / 3.6f);
         if (alpha != 0) {
@@ -189,7 +189,6 @@ void Pure_Pursuit::update_cmd_vel()
         } else {
             yaw_rate = 0.0;
         }
-        //std::cout << yaw_rate << std::endl;
 
         // check vehicle orientation and target yaw
         if (std::abs(target_yaw - current_yaw_euler) < M_PI) {
