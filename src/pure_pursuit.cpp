@@ -44,7 +44,7 @@ class Pure_Pursuit
 
         // for publish cmd_vel
         geometry_msgs::Twist cmd_vel;
-        float goal_th = 5.0;
+        float goal_th = 0.1;
         float yaw_rate = 0.0;
     public:
         Pure_Pursuit();
@@ -60,7 +60,7 @@ class Pure_Pursuit
 
 Pure_Pursuit::Pure_Pursuit()
 {
-    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel_pure", 50);
+    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
     targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num2", 10);
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
@@ -190,7 +190,21 @@ void Pure_Pursuit::update_cmd_vel()
         //std::cout << yaw_rate << std::endl;
 
         // check vehicle orientation and target yaw
-        
+        if (std::abs(target_yaw - current_yaw_euler) < M_PI) {
+            if (target_yaw < current_yaw_euler) {
+                yaw_rate = yaw_rate * (-1.0);
+            }
+        } else if (std::abs(target_yaw - current_yaw_euler) > M_PI) {
+            if (target_yaw > current_yaw_euler) {
+                yaw_rate = yaw_rate * (-1.0);
+            }
+        }
+
+        // publish cmd_vel
+        cmd_vel.linear.x = target_speed / 3.6f; //[m/s]
+        cmd_vel.angular.z = yaw_rate;
+        cmd_vel_pub.publish(cmd_vel);
+        return;
     }
 }
 
