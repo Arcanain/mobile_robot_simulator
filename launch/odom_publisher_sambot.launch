@@ -11,6 +11,42 @@
   <node pkg="mobile_robot_simulator" name="odom_publisher" type="odom_publisher" output="screen"/>
   <node pkg="mobile_robot_simulator" name="save_path" type="save_path.py" output="screen"/>
   
+  <!--ESKF-->
+  <node pkg="gnss_imu_odom_ESKF" name="test_eskf_localization" type="test_eskf_localization" output="screen"/>
+  
+  <!--gps_common-->
+  <node name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node">
+       <remap from="/fix" to="/gps/fix"/>
+       <remap from="/odom" to="/utm"/>
+  </node>
+  
+  <!--navsat_transform_node-->
+  <!--<node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node" clear_params="true">
+    <rosparam command="load" file="$(find gnss_imu_odom_ESKF)/config/navsat_transform_template.yaml" />
+      <remap from="imu/data" to="/imu/data"/>
+      <remap from="odometry/filtered" to="/odom"/>
+      <remap from="gps/fix" to="/gps/fix"/>
+  </node>-->
+
+  <!--<rosparam command="load" file="$(find gnss_imu_odom_ESKF)/config/ekf_params.yaml" />
+  <rosparam command="load" file="$(find gnss_imu_odom_ESKF)/config/navsat_params_sim.yaml" />
+ 
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
+
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+    <remap from="odometry/filtered" to="odometry/filtered_map"/>
+  </node>
+
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true" output="screen" >
+      <remap from="odometry/filtered" to="odometry/filtered_map"/>
+      <remap from="gps/fix" to="/gps/fix"/>
+      <remap from="imu/data" to="/imu/data"/>
+  </node>-->
+
+  <node pkg="geonav_transform" type="geonav_transform_node" name="geonav_transform_node" output="screen">
+		<rosparam param="datum">[49.90000, 8.899999, 0.0]</rosparam>
+	</node>
+
   <!-- roslaunch arguments -->
   <arg name="paused" default="false"/>
   <arg name="debug" default="false"/>

@@ -61,7 +61,8 @@ class Pure_Pursuit
 
 Pure_Pursuit::Pure_Pursuit()
 {
-    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
+    //cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
+    cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel_automatic", 50);
     targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num", 10);
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);

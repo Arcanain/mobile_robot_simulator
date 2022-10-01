@@ -89,6 +89,7 @@
       <referenceLongitude>8.9</referenceLongitude>
       <referenceHeading>0</referenceHeading>
       <referenceAltitude>0</referenceAltitude>
+      <gaussianNoise>0.01 0.01 0.1</gaussianNoise> <!-- this is std. dev. not var.-->
       <drift>0.0001 0.0001 0.0001</drift>
     </plugin>
   </gazebo>
