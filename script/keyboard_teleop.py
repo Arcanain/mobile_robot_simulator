@@ -33,7 +33,7 @@ class KeyTeleop(object):
     self.alive = True
     # Setup publisher
     #self.pub_twist = rospy.Publisher('/cmd_vel', Twist)
-    self.pub_twist = rospy.Publisher('/cmd_vel_keyboard', Twist)
+    self.pub_twist = rospy.Publisher('/cmd_vel', Twist)
  
   def fini(self):
     # Restore terminal settings

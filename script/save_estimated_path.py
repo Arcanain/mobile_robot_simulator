@@ -8,8 +8,8 @@ from nav_msgs.msg import Odometry
 
 class Save_Path():
     def __init__(self):
-        rospy.init_node("save_path", anonymous=True)
-        self.savepath_sub = rospy.Subscriber("/odom", Odometry, self.odom_callback)
+        rospy.init_node("save_estimated_path", anonymous=True)
+        self.savepath_sub = rospy.Subscriber("/estimated_pose", Odometry, self.odom_callback)
 
         # pre odometry
         self.pre_x = 0.0 #[m]
@@ -28,7 +28,7 @@ class Save_Path():
                              odom.pose.pose.orientation.x,
                              odom.pose.pose.orientation.y,
                              odom.pose.pose.orientation.z,
-                             odom.pose.pose.orientation.w,
+                             1.0,
                             ]
             self.path_dict[len(self.path_dict)] = current_point
 
@@ -53,7 +53,7 @@ class Save_Path():
         # Save CSV path file
         cols = ["x", "y", "z", "w0", "w1", "w2", "w3"]
         df = pd.DataFrame.from_dict(self.path_dict, orient='index',columns=cols)
-        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv", index=False)
+        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv", index=False)
 
 if __name__ == '__main__':
     print('Save Path is Started...')

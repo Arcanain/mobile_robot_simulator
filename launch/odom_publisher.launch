@@ -7,13 +7,11 @@
   <node pkg="mobile_robot_simulator" name="keyboard_teleop" type="keyboard_teleop.py" output="screen"/>
   
   <!--odometry publish /odom-->
-  <!--<node pkg="mobile_robot_simulator" name="odom_publisher" type="odom_publisher.py" output="screen"/>-->
   <node pkg="mobile_robot_simulator" name="odom_publisher" type="odom_publisher" output="screen"/>
   <node pkg="mobile_robot_simulator" name="save_path" type="save_path.py" output="screen"/>
 
   <!-- robot description -->
   <arg name="model" default="$(find mobile_robot_simulator)/urdf/mobile_robot.urdf"/>
-  <!--<arg name="model" default="$(find mobile_robot_simulator)/urdf/sam_bot_description.urdf.xacro"/>-->
   <arg name="gui" default="False"/>
   
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />

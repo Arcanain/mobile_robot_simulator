@@ -21,7 +21,7 @@ class Pure_Pursuit
         ros::Subscriber odom_sub;
 
         float target_speed = 1.0;        // target speed [km/h]
-        float target_LookahedDist = 0.5; // Lookahed distance for Pure Pursuit[m]
+        float target_LookahedDist = 0.1; // Lookahed distance for Pure Pursuit[m]
 
         bool path_first_flg = false;
         bool path_num_first_flg = false;
@@ -67,7 +67,7 @@ Pure_Pursuit::Pure_Pursuit()
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
-    odom_sub = nh.subscribe("/odom", 10, &Pure_Pursuit::odom_callback, this);
+    odom_sub = nh.subscribe("/estimated_pose", 10, &Pure_Pursuit::odom_callback, this);
 }
 
 Pure_Pursuit::~Pure_Pursuit()
@@ -212,7 +212,7 @@ void Pure_Pursuit::update_cmd_vel()
 
 int main(int argc, char**argv)
 {
-    ros::init(argc, argv, "pure_pursuit");
+    ros::init(argc, argv, "pure_pursuit_estimated_pose");
     
     Pure_Pursuit pure_pursuit;
     ros::Rate loop_rate(50);

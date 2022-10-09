@@ -13,7 +13,8 @@ class Path_Publisher():
         rospy.init_node("path_publisher", anonymous=True)
 
         # get pose data from csv file
-        self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_0801.csv")
+        self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
+        #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
         pose_list = self.get_poses_from_csvdata()
         
         # creat path data

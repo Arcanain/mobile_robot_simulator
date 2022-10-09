@@ -20,8 +20,7 @@ class Pure_Pursuit
         ros::Subscriber path_num_sub;
         ros::Subscriber odom_sub;
 
-        float target_speed = 1.0;        // target speed [km/h]
-        float target_LookahedDist = 0.5; // Lookahed distance for Pure Pursuit[m]
+        float target_LookahedDist; // Lookahed distance for Pure Pursuit[m]
 
         bool path_first_flg = false;
         bool path_num_first_flg = false;
@@ -39,6 +38,7 @@ class Pure_Pursuit
         float current_x;
         float current_y;
         float current_yaw_euler;
+        float current_vel;
 
         // for publish targetwp_num
         std_msgs::Int32 targetwp_num;
@@ -47,6 +47,13 @@ class Pure_Pursuit
         geometry_msgs::Twist cmd_vel;
         float goal_th = 0.1; //[m]
         float yaw_rate = 0.0; //[rad/s]
+
+        // cauvature parameter
+        float minCurvature = 0.0;
+        float maxCurvature = 3.0;
+        float minVelocity = 0.1;
+        float maxVelocity = 0.3;
+
     public:
         Pure_Pursuit();
         ~Pure_Pursuit();
@@ -67,7 +74,7 @@ Pure_Pursuit::Pure_Pursuit()
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
-    odom_sub = nh.subscribe("/odom", 10, &Pure_Pursuit::odom_callback, this);
+    odom_sub = nh.subscribe("/estimated_pose", 10, &Pure_Pursuit::odom_callback, this);
 }
 
 Pure_Pursuit::~Pure_Pursuit()
@@ -142,8 +149,24 @@ void Pure_Pursuit::update_cmd_vel()
         // calculate min dist index
         std::vector<float>::iterator iter = std::min_element(dist_from_current_pos.begin(), dist_from_current_pos.end());
         size_t min_index = std::distance(dist_from_current_pos.begin(), iter);
-        last_index = static_cast<int>(min_index);
+        //last_index = static_cast<int>(min_index);
         
+        float look_ahead_filter = 0.1 * current_vel + 0.3;
+        target_LookahedDist = 0.0;
+        // look ahead distanceの更新
+        while (look_ahead_filter > target_LookahedDist) {
+            const double d_x = path_x[min_index + 1] - path_x[min_index];
+            const double d_y = path_y[min_index + 1] - path_y[min_index];
+            target_LookahedDist += std::sqrt(d_x * d_x + d_y * d_y);
+            min_index += 1;
+        }
+        
+        //target_LookahedDist = 0.5;
+
+        last_index = static_cast<int>(min_index);
+        std::cout << target_LookahedDist << std::endl;
+        //std::cout << last_index << std::endl;
+
         // publish target waypoint number
         targetwp_num.data = last_index;
         targetwp_num_pub.publish(targetwp_num);
@@ -184,7 +207,19 @@ void Pure_Pursuit::update_cmd_vel()
             yaw_diff = fmod(yaw_diff, -M_PI);
         }
 
-        float alpha = dist_sp_from_nearest / (target_speed / 3.6f);
+        // calcurate curvature and linear_velocity
+        float dx = target_lookahed_x - current_x;
+        float dy = target_lookahed_y - current_y;
+        float distance = sqrt(pow(dx, 2) + pow(dy, 2));
+        float curvature = abs(yaw_diff / distance);
+
+        curvature = std::max(minCurvature, std::min(curvature, maxCurvature));
+        curvature = curvature / maxCurvature;
+        //change velocity according to curvature (asteroid)
+        float target_speed = (maxVelocity-minVelocity) * pow(sin(acos(std::cbrt(curvature))), 3) + minVelocity; //[m/s]   
+        current_vel = target_speed;
+
+        float alpha = dist_sp_from_nearest / target_speed;
         if (alpha != 0) {
             yaw_rate = std::abs(yaw_diff) / alpha;
         } else {
@@ -203,7 +238,7 @@ void Pure_Pursuit::update_cmd_vel()
         }
 
         // publish cmd_vel
-        cmd_vel.linear.x = target_speed / 3.6f; //[m/s]
+        cmd_vel.linear.x = target_speed;
         cmd_vel.angular.z = yaw_rate;
         cmd_vel_pub.publish(cmd_vel);
         return;
@@ -212,7 +247,7 @@ void Pure_Pursuit::update_cmd_vel()
 
 int main(int argc, char**argv)
 {
-    ros::init(argc, argv, "pure_pursuit");
+    ros::init(argc, argv, "pure_pursuit_estimated_pose_adaptive_control");
     
     Pure_Pursuit pure_pursuit;
     ros::Rate loop_rate(50);
