@@ -6,6 +6,8 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
+#include <sensor_msgs/Imu.h>
 #include <math.h>
 #include <vector>
 #include <algorithm>
@@ -19,12 +21,15 @@ class Pure_Pursuit
         ros::Subscriber path_sub;
         ros::Subscriber path_num_sub;
         ros::Subscriber odom_sub;
+        ros::Subscriber imu_sub;
+        ros::Subscriber related_yaw_sub;
 
         float target_LookahedDist; // Lookahed distance for Pure Pursuit[m]
 
         bool path_first_flg = false;
         bool path_num_first_flg = false;
         bool odom_first_flg = false;
+        bool imu_first_flg = false;
         bool position_search_flg = false;
         int path_num = 0;
         int last_index = 0;
@@ -50,7 +55,7 @@ class Pure_Pursuit
 
         // cauvature parameter
         float minCurvature = 0.0;
-        float maxCurvature = 3.0;
+        float maxCurvature = 0.5;
         float minVelocity = 0.1;
         float maxVelocity = 0.3;
 
@@ -62,6 +67,10 @@ class Pure_Pursuit
         void path_num_callback(const std_msgs::Int32 &path_num_msg);
         // odom callback
         void odom_callback(const nav_msgs::Odometry &odom_msg);
+        // imu callback
+        void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg);
+        // related yaw
+        void related_yaw_callback(const std_msgs::Float64 &related_yaw_msg);
         // publish cmd_vel
         void update_cmd_vel();
 };
@@ -74,7 +83,9 @@ Pure_Pursuit::Pure_Pursuit()
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
-    odom_sub = nh.subscribe("/odom", 10, &Pure_Pursuit::odom_callback, this);
+    odom_sub = nh.subscribe("/estimated_pose", 10, &Pure_Pursuit::odom_callback, this);
+    imu_sub = nh.subscribe("/imu/data", 10, &Pure_Pursuit::imu_callback, this);
+    related_yaw_sub = nh.subscribe("/wit/related_yaw", 10, &Pure_Pursuit::related_yaw_callback, this);
 }
 
 Pure_Pursuit::~Pure_Pursuit()
@@ -113,7 +124,6 @@ void Pure_Pursuit::path_num_callback(const std_msgs::Int32 &path_num_msg)
         path_num = path_num_msg.data;
         path_num_first_flg = true;
     }
-    //std::cout << path_num << std::endl;
 }
 
 void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
@@ -121,6 +131,7 @@ void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
     current_x = odom_msg.pose.pose.position.x;
     current_y = odom_msg.pose.pose.position.y;
 
+    /*
     double roll, pitch, yaw;
     tf::Quaternion odom_quat(
         odom_msg.pose.pose.orientation.x,
@@ -132,14 +143,45 @@ void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
     m.getRPY(roll, pitch, yaw);
 
     current_yaw_euler = (float)yaw;
-    std::cout << current_yaw_euler << std::endl;
-    
+    */
+
     odom_first_flg = true;
+}
+
+void Pure_Pursuit::imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
+{
+    double roll, pitch, yaw;
+    tf::Quaternion odom_quat(
+        imu_msg->orientation.x,
+        imu_msg->orientation.y,
+        imu_msg->orientation.z,
+        imu_msg->orientation.w
+    ); 
+    tf::Matrix3x3 m(odom_quat);
+    m.getRPY(roll, pitch, yaw);
+
+    //current_yaw_euler = (float)yaw + 0.28f + M_PI;
+    current_yaw_euler = (float)yaw + 0.31f + M_PI;
+    if (current_yaw_euler > M_PI) {
+        current_yaw_euler = current_yaw_euler - 2.0 * M_PI;
+    } else if (current_yaw_euler < -M_PI) {
+        current_yaw_euler = current_yaw_euler + 2.0 * M_PI;
+    }
+    //std::cout << current_yaw_euler << std::endl;
+    
+    imu_first_flg = true;
+}
+
+void Pure_Pursuit::related_yaw_callback(const std_msgs::Float64 &related_yaw_msg)
+{
+    //std::cout << related_yaw_msg.data << std::endl;
+    //current_yaw_euler = related_yaw_msg.data;
+    //imu_first_flg = true;
 }
 
 void Pure_Pursuit::update_cmd_vel()
 {
-    if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
+    if (path_first_flg == true && odom_first_flg == true && imu_first_flg == true && path_num != 0) {
         // calculate path from current position distance
         std::vector<float> dist_from_current_pos;
         for (int index = 0; index < path_num; index++) {
@@ -200,15 +242,17 @@ void Pure_Pursuit::update_cmd_vel()
         // calculate target yaw rate
         float target_yaw = std::atan2(target_lookahed_y - current_y, target_lookahed_x - current_x);
         float yaw_diff = target_yaw - current_yaw_euler;
+        std::cout << target_yaw << std::endl;
         std::cout << current_yaw_euler << std::endl;
 
         // float/double型の割り算の余りを求める方法【浮動小数点数の剰余】
         // https://marycore.jp/prog/c-lang/modulo-floating-point-number/
         if (yaw_diff > M_PI) {
-            yaw_diff = fmod(yaw_diff, M_PI);
+            yaw_diff = -M_PI + fmod(yaw_diff, M_PI);
         } else if (yaw_diff < -M_PI) {
-            yaw_diff = fmod(yaw_diff, -M_PI);
+            yaw_diff = M_PI + fmod(yaw_diff, -M_PI);
         }
+        //std::cout << yaw_diff << std::endl;
 
         // calcurate curvature and linear_velocity
         float dx = target_lookahed_x - current_x;
@@ -250,7 +294,7 @@ void Pure_Pursuit::update_cmd_vel()
 
 int main(int argc, char**argv)
 {
-    ros::init(argc, argv, "pure_pursuit_adaptive_velocity");
+    ros::init(argc, argv, "estimated_pose_pure_pursuit_1028");
     
     Pure_Pursuit pure_pursuit;
     ros::Rate loop_rate(50);

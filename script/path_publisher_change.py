@@ -6,34 +6,40 @@ import rospy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Header
 from nav_msgs.msg import Path
+from std_msgs.msg import Int8
 from std_msgs.msg import Int32
 
 class Path_Publisher():
     def __init__(self):
-        rospy.init_node("path_publisher", anonymous=True)
+        rospy.init_node("path_publisher_change", anonymous=True)
 
         # get pose data from csv file
         #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
-        #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
+        self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
         #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_estimated_pose.csv")
         #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_estimater_kakuninsoukou.csv")
         #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_estimater_lawn_stack_2_tsukuba_hime.csv")
 
-        #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1106_4.csv")
-        #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/divide_path1_1106.csv")
-        self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/divide_path2_1106.csv")
+        # initialize publisher
+        self.path_pub = rospy.Publisher("/path", Path, queue_size = 50)
+        self.path_num_pub = rospy.Publisher("/path_num", Int32, queue_size = 10)
+        self.select_path_sub = rospy.Subscriber("/select_path_num", Int8, self.select_csv_file)
 
+    def select_csv_file(self, msg):
+        select_num = msg.data
+        print(select_num)
+        if select_num == 1:
+            self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
+        elif select_num == 2:
+            self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
+    
+    def crate_path(self):
         pose_list = self.get_poses_from_csvdata()
-        
         # creat path data
         self.path = Path()
         self.path.header.stamp = rospy.Time.now()
         self.path.header.frame_id = "map"
         self.path.poses = pose_list
-
-        # initialize publisher
-        self.path_pub = rospy.Publisher("/path", Path, queue_size = 50)
-        self.path_num_pub = rospy.Publisher("/path_num", Int32, queue_size = 10)
 
     def get_poses_from_csvdata(self):
         poses_list = []
@@ -64,6 +70,7 @@ if __name__ == '__main__':
     
     r = rospy.Rate(50) # 50hz
     while not rospy.is_shutdown():
+        path_publisher.crate_path()
         path_publisher.publish_path()
         r.sleep()
     print("Path Publisher finished!")
