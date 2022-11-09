@@ -50,12 +50,30 @@ class Path_Publisher():
         self.write_finish_flag = Bool()
         self.write_finish_flag.data = False
 
+        """
         if write_start_flag:
             if self.csv_file_number == 1:
                 self.csv_data = self.csv_data1
             elif self.csv_file_number == 2:
                 self.csv_data = self.csv_data2
-
+            elif self.csv_file_number == 3:
+                self.csv_data = self.csv_data1
+            elif self.csv_file_number == 4:
+                self.csv_data = self.csv_data2
+            elif self.csv_file_number == 5:
+                self.csv_data = self.csv_data1
+            elif self.csv_file_number == 6:
+                self.csv_data = self.csv_data2
+            elif self.csv_file_number == 7:
+                self.csv_data = self.csv_data1
+            elif self.csv_file_number == 8:
+                self.csv_data = self.csv_data2
+        """
+        if write_start_flag:
+            if self.csv_file_number == 1:
+                self.csv_data = self.csv_data1
+            elif self.csv_file_number == 2:
+                self.csv_data = self.csv_data2
             self.write_finish_flag.data = True
         
         self.write_finish_pub.publish(self.write_finish_flag)

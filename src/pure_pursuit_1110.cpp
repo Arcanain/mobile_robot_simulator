@@ -43,6 +43,7 @@ class Pure_Pursuit
         bool goal_flg = false;
         //bool write_start_flg = false;
         bool path_reset_index_flg = false;
+        bool count_flag = false;
 
         int path_num = 0;
         int last_index = 0;
@@ -51,6 +52,9 @@ class Pure_Pursuit
         int chnage_path_count = 0;
 
         int pre_csv_path_number = 1;
+        
+        int goal_count = 0;
+        int csv_number_count = 0;
 
         // for path_callback
         std::vector<float> path_x;
@@ -205,6 +209,8 @@ void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
         goal_flg = false;
         path_reset_index_flg = false;
         path_first_flg = false;
+    } else {
+        goal_flg = false;
     }
 }
 
@@ -228,12 +234,12 @@ void Pure_Pursuit::update_cmd_vel()
             last_index = 0;
             last_index_dummy = 0;
             pre_last_index = 0;
-            /*
+            
             path_x = path_x;
             path_y = path_y;
             path_st = path_st;
             path_num = path_num;
-            */
+            
             path_reset_index_flg = true;
 
             write_start_flg.data = false;
@@ -306,10 +312,18 @@ void Pure_Pursuit::update_cmd_vel()
         float goal_y = path_y[path_num - 1];
         const float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
 
+        //std::cout << goal_dist << std::endl;
+
         if (goal_dist < goal_th) {
             std::cout << "Goal!" << std::endl;
 
             goal_flg = true;
+
+            goal_count = goal_count + 1;
+            if (goal_count >= 2) {
+                goal_count = 0;
+                goal_flg = false;
+            }
         }
 
         if (goal_flg) {
@@ -317,11 +331,29 @@ void Pure_Pursuit::update_cmd_vel()
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub.publish(cmd_vel);
         } 
-
+        
         if (goal_flg == true && write_start_flg.data == false) {
+
+            ros::Duration(3).sleep(); // 3秒間停止
+            
+            count_flag = true;
+
+            csv_number_count = csv_number_count + 1;
+            if (csv_number_count >= 2) {
+                csv_number_count = 0;
+                count_flag = false;
+            } 
+
+            if (count_flag) {
+                csv_path_number.data = csv_path_number.data + 1;
+                pre_csv_path_number = csv_path_number.data;
+            }
+
+            /*
             csv_path_number.data = csv_path_number.data + 1;
 
             pre_csv_path_number = csv_path_number.data;
+            */
 
             //std::cout << csv_path_number.data << std::endl;
             csv_path_number_pub.publish(csv_path_number);
