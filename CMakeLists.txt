@@ -69,3 +69,6 @@ target_link_libraries(pure_pursuit_1105 ${catkin_LIBRARIES})
 
 add_executable(pure_pursuit_estimated_1105 src/pure_pursuit_estimated_1105.cpp)
 target_link_libraries(pure_pursuit_estimated_1105 ${catkin_LIBRARIES})
+
+add_executable(pure_pursuit_1110 src/pure_pursuit_1110.cpp)
+target_link_libraries(pure_pursuit_1110 ${catkin_LIBRARIES})

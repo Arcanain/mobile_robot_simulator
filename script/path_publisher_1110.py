@@ -12,7 +12,7 @@ from std_msgs.msg import Bool
 
 class Path_Publisher():
     def __init__(self):
-        rospy.init_node("path_publisher_change", anonymous=True)
+        rospy.init_node("path_publisher_1110", anonymous=True)
 
         # get pose data from csv file
         self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
@@ -26,26 +26,39 @@ class Path_Publisher():
 
         # init csv data
         self.csv_data = self.csv_data1
+        self.csv_file_number = 1
 
         # initialize publisher
         self.path_pub = rospy.Publisher("/path", Path, queue_size = 10)
         self.path_num_pub = rospy.Publisher("/path_num", Int32, queue_size = 10)
 
-        self.write_start_sub = rospy.Subscriber("/write_start_flag", Bool, self.write_start_callback)
+        self.write_start_sub = rospy.Subscriber("/write_start_flg", Bool, self.write_start_callback)
         
-        self.write_finish_pub = rospy.Publisher("/write_finish_flag", Bool, queue_size = 10)
+        self.write_finish_pub = rospy.Publisher("/write_finish_flg", Bool, queue_size = 10)
+
+        self.csv_path_number_sub = rospy.Subscriber("/csv_path_number", Int8, self.csv_path_number_callback)
+
+    def csv_path_number_callback(self, msg):
+        self.csv_file_number = msg.data
+        #print(self.csv_file_number)
 
     def write_start_callback(self, msg):
-        print(msg.data)
         write_start_flag = msg.data
+        print(write_start_flag)
+        print(self.csv_file_number)
+
+        self.write_finish_flag = Bool()
+        self.write_finish_flag.data = False
 
         if write_start_flag:
-            self.csv_data = self.csv_data2
-            
-            self.write_finish_flag = Bool()
-            self.write_finish_flag.data = True
-            self.write_finish_pub.publish(self.write_finish_flag)
+            if self.csv_file_number == 1:
+                self.csv_data = self.csv_data1
+            elif self.csv_file_number == 2:
+                self.csv_data = self.csv_data2
 
+            self.write_finish_flag.data = True
+        
+        self.write_finish_pub.publish(self.write_finish_flag)
 
     def crate_path(self):
         pose_list = self.get_poses_from_csvdata(self.csv_data)

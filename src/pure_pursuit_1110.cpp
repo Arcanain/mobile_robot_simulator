@@ -1,8 +1,3 @@
-/***********************
- * 2022 10/29
- * 
- *
-************************/
 #include <ros/ros.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -12,6 +7,7 @@
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/Int8.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/Joy.h>
 #include <math.h>
 #include <vector>
@@ -26,11 +22,14 @@ class Pure_Pursuit
         ros::NodeHandle nh;
         ros::Publisher cmd_vel_pub;
         ros::Publisher targetwp_num_pub;
-        ros::Publisher select_path_num_pub;
+        ros::Publisher csv_path_number_pub;
         ros::Subscriber path_sub;
         ros::Subscriber path_num_sub;
         ros::Subscriber odom_sub;
         ros::Subscriber joy_sub;
+
+        ros::Publisher write_start_pub;
+        ros::Subscriber write_finish_sub;
 
         float target_LookahedDist; // Lookahed distance for Pure Pursuit[m]
 
@@ -42,7 +41,8 @@ class Pure_Pursuit
         bool select_path_change = false;
 
         bool goal_flg = false;
-        bool write_start_flg = false;
+        //bool write_start_flg = false;
+        bool path_reset_index_flg = false;
 
         int path_num = 0;
         int last_index = 0;
@@ -50,7 +50,7 @@ class Pure_Pursuit
         int pre_last_index = 0;
         int chnage_path_count = 0;
 
-        int csv_path_number = 1;
+        int pre_csv_path_number = 1;
 
         // for path_callback
         std::vector<float> path_x;
@@ -66,8 +66,9 @@ class Pure_Pursuit
         // for publish targetwp_num
         std_msgs::Int32 targetwp_num;
 
-        // for publish select_path_num
-        std_msgs::Int8 select_path_num;
+        // for publish csv_path_number
+        std_msgs::Int8 csv_path_number;
+        std_msgs::Bool write_start_flg;
 
         // for publish cmd_vel
         geometry_msgs::Twist cmd_vel;
@@ -91,6 +92,9 @@ class Pure_Pursuit
         void odom_callback(const nav_msgs::Odometry &odom_msg);
         // joy
         void joy_callback(const sensor_msgs::Joy& joy);
+
+        void write_finish_callback(const std_msgs::Bool& msg);
+
         // publish cmd_vel
         void update_cmd_vel();
 
@@ -108,13 +112,17 @@ Pure_Pursuit::Pure_Pursuit()
     //cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel_automatic", 50);
     targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num", 10);
-    select_path_num_pub = nh.advertise<std_msgs::Int8>("/select_path_num", 10);
-    select_path_num.data = 1;
+    csv_path_number_pub = nh.advertise<std_msgs::Int8>("/csv_path_number", 10);
+    csv_path_number.data = 1;
 
     path_sub = nh.subscribe("/path", 10, &Pure_Pursuit::path_callback, this);
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
     odom_sub = nh.subscribe("/odom", 10, &Pure_Pursuit::odom_callback, this);
     joy_sub = nh.subscribe("/joy", 10, &Pure_Pursuit::joy_callback, this);
+
+    write_start_pub = nh.advertise<std_msgs::Bool>("/write_start_flg", 10);
+    write_finish_sub = nh.subscribe("/write_finish_flg", 10, &Pure_Pursuit::write_finish_callback, this);
+    write_start_flg.data = false;
 }
 
 Pure_Pursuit::~Pure_Pursuit()
@@ -124,26 +132,28 @@ Pure_Pursuit::~Pure_Pursuit()
 
 void Pure_Pursuit::path_callback(const nav_msgs::Path &path_msg)
 {
-    if (!path_first_flg && path_num != 0) {
-        std::cout << "first path call" << std::endl;
-        
-        float last_x = 0.0;
-        float last_y = 0.0;
-        float st = 0.0;
-        float last_st = 0.0;
-        for (int index = 0; index < path_num; index++) {
-            path_x.emplace_back(path_msg.poses[index].pose.position.x);
-            path_y.emplace_back(path_msg.poses[index].pose.position.y);
+    if (!path_reset_index_flg) {
+        if (!path_first_flg && path_num != 0) {
+            std::cout << "first path call" << std::endl;
             
-            st = std::sqrt(std::pow((path_x[index] - last_x), 2.0) + std::pow((path_y[index] - last_y), 2.0));
-            path_st.emplace_back(last_st + st);
-            
-            last_x = path_x[index];
-            last_y = path_y[index];
-            last_st = path_st[index];
-        }
+            float last_x = 0.0;
+            float last_y = 0.0;
+            float st = 0.0;
+            float last_st = 0.0;
+            for (int index = 0; index < path_num; index++) {
+                path_x.emplace_back(path_msg.poses[index].pose.position.x);
+                path_y.emplace_back(path_msg.poses[index].pose.position.y);
+                
+                st = std::sqrt(std::pow((path_x[index] - last_x), 2.0) + std::pow((path_y[index] - last_y), 2.0));
+                path_st.emplace_back(last_st + st);
+                
+                last_x = path_x[index];
+                last_y = path_y[index];
+                last_st = path_st[index];
+            }
 
-        path_first_flg = true;
+            path_first_flg = true;
+        }
     }
 }
 
@@ -188,9 +198,51 @@ void Pure_Pursuit::joy_callback(const sensor_msgs::Joy& msg)
   }
 }
 
+void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
+{
+    if (msg.data == true) {
+        write_start_flg.data = false;
+        goal_flg = false;
+        path_reset_index_flg = false;
+        path_first_flg = false;
+    }
+}
+
 void Pure_Pursuit::update_cmd_vel()
 {
     if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
+        
+        // path clear
+        /*
+        path_x.clear();
+        path_y.clear();
+        path_st.clear();
+        */
+        // index flg reset
+        if (!path_reset_index_flg) {
+            // path clear
+            path_x.clear();
+            path_y.clear();
+            path_st.clear();
+            
+            last_index = 0;
+            last_index_dummy = 0;
+            pre_last_index = 0;
+            /*
+            path_x = path_x;
+            path_y = path_y;
+            path_st = path_st;
+            path_num = path_num;
+            */
+            path_reset_index_flg = true;
+
+            write_start_flg.data = false;
+
+            goal_flg = false;
+            
+            //ros::Duration(3).sleep(); // 3秒間停止
+        }
+
         // calculate path from current position distance
         std::vector<float> dist_from_current_pos;
         for (int index = 0; index < path_num; index++) {
@@ -239,11 +291,13 @@ void Pure_Pursuit::update_cmd_vel()
         targetwp_num_pub.publish(targetwp_num);
         
         // publish select path number
+        /*
         if (select_path_change) {
             chnage_path_count++;
-            select_path_num.data = select_path_num.data + 1;
+            csv_path_number.data = csv_path_number.data + 1;
         }
-        select_path_num_pub.publish(select_path_num);
+        csv_path_number_pub.publish(csv_path_number);
+        */
 
         /***********************************************************************
          * check goal
@@ -252,34 +306,33 @@ void Pure_Pursuit::update_cmd_vel()
         float goal_y = path_y[path_num - 1];
         const float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
 
-        bool goal_flg = false;
         if (goal_dist < goal_th) {
             std::cout << "Goal!" << std::endl;
-            cmd_vel.linear.x = 0.0;
-            cmd_vel.angular.z = 0.0;
-            cmd_vel_pub.publish(cmd_vel);
 
             goal_flg = true;
-
-            if (chnage_path_count == 0) {
-                select_path_change = true;
-            } else {
-                select_path_change = false;
-            }
         }
 
         if (goal_flg) {
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub.publish(cmd_vel);
-        }
+        } 
 
-        bool write_start_flg = true;
-        if (goal_flg == true && write_start_flg == true) {
-            csv_path_number = csv_path_number + 1;
+        if (goal_flg == true && write_start_flg.data == false) {
+            csv_path_number.data = csv_path_number.data + 1;
 
-            write_start_flg = false;
-        }
+            pre_csv_path_number = csv_path_number.data;
+
+            //std::cout << csv_path_number.data << std::endl;
+            csv_path_number_pub.publish(csv_path_number);
+
+            //write_start_flg = true;
+            write_start_flg.data = true;
+        } 
+
+        write_start_pub.publish(write_start_flg);
+
+
 
         // check goal
         /*
