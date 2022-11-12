@@ -14,6 +14,8 @@ class DivideCsvFile():
     def __init__(self):
         # get pose data from csv file
         self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/kakunin_1106_left.csv")
+        #self.csv_data = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/kakunin_1106_right.csv")
+
         self.csv_file_number = len(self.csv_data) // 100
         self.csv_file_number_remainder = len(self.csv_data) % 100
         print(self.csv_file_number)
@@ -73,7 +75,10 @@ class DivideCsvFile():
         # Save CSV path file
         cols = ["x", "y", "z", "w0", "w1", "w2", "w3"]
         file_name = "test_course" + str(csv_number + 1) + ".csv"
-        file_path = "~/catkin_ws/src/mobile_robot_simulator/path/" + file_name
+        #file_path = "~/catkin_ws/src/mobile_robot_simulator/path/" + file_name
+        file_path = "~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/" + file_name
+        #file_path = "~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/" + file_name
+
         df = pd.DataFrame.from_dict(self.path_dict, orient='index',columns=cols)
         df.to_csv(file_path, index=False)
 
