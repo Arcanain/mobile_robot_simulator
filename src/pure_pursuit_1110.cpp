@@ -167,7 +167,6 @@ void Pure_Pursuit::path_num_callback(const std_msgs::Int32 &path_num_msg)
         path_num = path_num_msg.data;
         path_num_first_flg = true;
     }
-    //std::cout << path_num << std::endl;
 }
 
 void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
@@ -209,6 +208,7 @@ void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
         goal_flg = false;
         path_reset_index_flg = false;
         path_first_flg = false;
+        path_num_first_flg = false;
     } else {
         goal_flg = false;
     }
@@ -231,6 +231,8 @@ void Pure_Pursuit::update_cmd_vel()
             path_y.clear();
             path_st.clear();
             
+            std::cout << "path reset" << std::endl;
+
             last_index = 0;
             last_index_dummy = 0;
             pre_last_index = 0;
@@ -246,7 +248,7 @@ void Pure_Pursuit::update_cmd_vel()
 
             goal_flg = false;
             
-            //ros::Duration(3).sleep(); // 3秒間停止
+            ros::Duration(1).sleep(); // 3秒間停止
         }
 
         // calculate path from current position distance
@@ -335,7 +337,7 @@ void Pure_Pursuit::update_cmd_vel()
         if (goal_flg == true && write_start_flg.data == false) {
 
             ros::Duration(3).sleep(); // 3秒間停止
-            
+
             count_flag = true;
 
             csv_number_count = csv_number_count + 1;
@@ -360,9 +362,11 @@ void Pure_Pursuit::update_cmd_vel()
 
             //write_start_flg = true;
             write_start_flg.data = true;
+
+            write_start_pub.publish(write_start_flg);
         } 
 
-        write_start_pub.publish(write_start_flg);
+        //write_start_pub.publish(write_start_flg);
 
 
 
