@@ -15,6 +15,7 @@ class Path_Publisher():
         rospy.init_node("path_publisher_1110", anonymous=True)
 
         # get pose data from csv file
+        """
         self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
         self.csv_data2 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
         self.csv_data3 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
@@ -23,6 +24,33 @@ class Path_Publisher():
         self.csv_data6 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
         self.csv_data7 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1005.csv")
         self.csv_data8 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/path_data_1004.csv")
+        """
+
+        # hirayama path
+        """
+        self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course1.csv")
+        self.csv_data2 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course2.csv")
+        self.csv_data3 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course3.csv")
+        self.csv_data4 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course4.csv")
+        self.csv_data5 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course5.csv")
+        self.csv_data6 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course6.csv")
+        self.csv_data7 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course1.csv")
+        self.csv_data8 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/hirayama_path/test_course2.csv")
+        """
+
+        # tsukuba kakunin left path
+        self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course1.csv")
+        self.csv_data2 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course2.csv")
+        self.csv_data3 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course3.csv")
+        self.csv_data4 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course4.csv")
+        self.csv_data5 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course5.csv")
+        self.csv_data6 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course6.csv")
+        self.csv_data7 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course7.csv")
+        self.csv_data8 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course8.csv")
+        self.csv_data9 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course9.csv")
+        self.csv_data10 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course10.csv")
+        self.csv_data11 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course11.csv")
+        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course12.csv")
 
         # init csv data
         self.csv_data = self.csv_data1
@@ -67,6 +95,15 @@ class Path_Publisher():
                 self.csv_data = self.csv_data7
             elif self.csv_file_number == 8:
                 self.csv_data = self.csv_data8
+            elif self.csv_file_number == 9:
+                self.csv_data = self.csv_data9
+            elif self.csv_file_number == 10:
+                self.csv_data = self.csv_data10
+            elif self.csv_file_number == 11:
+                self.csv_data = self.csv_data11
+            elif self.csv_file_number == 12:
+                self.csv_data = self.csv_data12
+
             self.write_finish_flag.data = True
             
             rospy.sleep(1)

@@ -312,9 +312,9 @@ void Pure_Pursuit::update_cmd_vel()
         **********************************************************************/
         float goal_x = path_x[path_num - 1];
         float goal_y = path_y[path_num - 1];
-        const float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
+        float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
 
-        //std::cout << goal_dist << std::endl;
+        std::cout << goal_dist << std::endl;
 
         if (goal_dist < goal_th) {
             std::cout << "Goal!" << std::endl;
@@ -458,11 +458,13 @@ void Pure_Pursuit::update_cmd_vel()
         }
         //std::cout << abs(last_index_dummy - pre_last_index) << std::endl;
 
+        /*
         if (abs(last_index_dummy - pre_last_index) > 10) {
             //std::cout << "YES" << std::endl;
             target_lookahed_x = path_x[pre_last_index + 3];
             target_lookahed_y = path_y[pre_last_index + 3];
         }
+        */
 
         // calculate target yaw rate
         float target_yaw = std::atan2(target_lookahed_y - current_y, target_lookahed_x - current_x);
