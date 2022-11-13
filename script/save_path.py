@@ -18,6 +18,9 @@ class Save_Path():
 
         # path dict for csvfile
         self.path_dict = {}
+
+        # path index count
+        self.path_index_count = 0
     
     def odom_callback(self, odom):
         dist = math.sqrt( (odom.pose.pose.position.x - self.pre_x)**2 + (odom.pose.pose.position.y - self.pre_y)**2 )
@@ -35,6 +38,10 @@ class Save_Path():
             # save pre_position
             self.pre_x = odom.pose.pose.position.x
             self.pre_y = odom.pose.pose.position.y
+
+            # add path index
+            self.path_index_count = self.path_index_count + 1
+            print("PathIndex:", self.path_index_count)
         else:
             pass
     """
@@ -53,7 +60,7 @@ class Save_Path():
         # Save CSV path file
         cols = ["x", "y", "z", "w0", "w1", "w2", "w3"]
         df = pd.DataFrame.from_dict(self.path_dict, orient='index',columns=cols)
-        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/test_cose8.csv", index=False)
+        df.to_csv("~/catkin_ws/src/mobile_robot_simulator/path/simulation_path.csv", index=False)
 
 if __name__ == '__main__':
     print('Save Path is Started...')

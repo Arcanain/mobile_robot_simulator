@@ -18,7 +18,10 @@ class Save_Path():
 
         # path dict for csvfile
         self.path_dict = {}
-    
+        
+        # path index count
+        self.path_index_count = 0
+
     def odom_callback(self, odom):
         dist = math.sqrt( (odom.pose.pose.position.x - self.pre_x)**2 + (odom.pose.pose.position.y - self.pre_y)**2 )
         if dist >= self.dist_thread:
@@ -35,6 +38,10 @@ class Save_Path():
             # save pre_position
             self.pre_x = odom.pose.pose.position.x
             self.pre_y = odom.pose.pose.position.y
+
+            # add path index
+            self.path_index_count = self.path_index_count + 1
+            print("PathIndex:", self.path_index_count)
         else:
             pass
     """
