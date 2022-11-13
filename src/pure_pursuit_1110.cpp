@@ -108,6 +108,8 @@ class Pure_Pursuit
         bool checkLineAndCircleIntersection(float start_x, float start_y, 
                                             float end_x, float end_y, 
                                             float p_x, float p_y);
+
+        bool autonomous_start_flg = false;
 };
 
 Pure_Pursuit::Pure_Pursuit()
@@ -191,13 +193,18 @@ void Pure_Pursuit::odom_callback(const nav_msgs::Odometry &odom_msg)
 
 void Pure_Pursuit::joy_callback(const sensor_msgs::Joy& msg)
 {
-  if (msg.axes.size() != 8) {
-    return;
-  }
-  
-  if (msg.buttons[0] == 1){
-    check_stop_joy_flg = true;
-  }
+    if (msg.axes.size() != 8) {
+        return;
+    }
+
+    // batu
+    if (msg.buttons[0] == 1){
+        check_stop_joy_flg = true;
+    }
+    // maru
+    if (msg.buttons[1] == 1){
+        autonomous_start_flg = true;
+    }
 }
 
 void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
@@ -535,7 +542,10 @@ int main(int argc, char**argv)
     ros::Rate loop_rate(50);
 	while(ros::ok()){
 		ros::spinOnce();
-        pure_pursuit.update_cmd_vel();
+        if (pure_pursuit.autonomous_start_flg) {
+            pure_pursuit.update_cmd_vel();
+        }
+        //pure_pursuit.update_cmd_vel();
 		loop_rate.sleep();
 	}
 
