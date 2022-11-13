@@ -9,6 +9,8 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <sensor_msgs/Joy.h>
+#include <std_msgs/Float64.h>
+#include <sensor_msgs/Imu.h>
 #include <math.h>
 #include <vector>
 #include <algorithm>
@@ -27,6 +29,7 @@ class Pure_Pursuit
         ros::Subscriber path_num_sub;
         ros::Subscriber odom_sub;
         ros::Subscriber joy_sub;
+        ros::Subscriber imu_sub;
 
         ros::Publisher write_start_pub;
         ros::Subscriber write_finish_sub;
@@ -39,6 +42,7 @@ class Pure_Pursuit
         bool position_search_flg = false;
         bool check_stop_joy_flg = false;
         bool select_path_change = false;
+        bool stack_flg = false;
 
         bool goal_flg = false;
         bool path_reset_index_flg = false;
@@ -55,6 +59,10 @@ class Pure_Pursuit
         int goal_count = 0;
         int csv_number_count = 0;
 
+        float stack_count = 0.0;
+        float stack_pre_x = 0.0;
+        float stack_pre_y = 0.0;
+
         // for path_callback
         std::vector<float> path_x;
         std::vector<float> path_y;
@@ -65,6 +73,8 @@ class Pure_Pursuit
         float current_y;
         float current_yaw_euler;
         float current_vel;
+        float pre_current_x;
+        float pre_current_y;
 
         // for publish targetwp_num
         std_msgs::Int32 targetwp_num;
@@ -84,20 +94,29 @@ class Pure_Pursuit
         float minVelocity = 0.1;
         float maxVelocity = 0.3;
 
+        // for subscribe imu_data
+        float accl_x;
+        float accl_y;
+        float accl_z;
+        float anglvel_x;
+        float anglvel_y;
+        float anglvel_z;
+
     public:
         Pure_Pursuit();
         ~Pure_Pursuit();
         // path callback
         void path_callback(const nav_msgs::Path &path_msg);
-
+        // path number callback
         void path_num_callback(const std_msgs::Int32 &path_num_msg);
         // odom callback
         void odom_callback(const nav_msgs::Odometry &odom_msg);
         // joy
         void joy_callback(const sensor_msgs::Joy& joy);
-
+        // imu callback
+        void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg);
+        // csv file write finish callback
         void write_finish_callback(const std_msgs::Bool& msg);
-
         // publish cmd_vel
         void update_cmd_vel();
 
@@ -108,6 +127,8 @@ class Pure_Pursuit
         bool checkLineAndCircleIntersection(float start_x, float start_y, 
                                             float end_x, float end_y, 
                                             float p_x, float p_y);
+
+        void stack_judgement();
 
         bool autonomous_start_flg = false;
 };
@@ -124,6 +145,7 @@ Pure_Pursuit::Pure_Pursuit()
     path_num_sub = nh.subscribe("/path_num", 10, &Pure_Pursuit::path_num_callback, this);
     odom_sub = nh.subscribe("/odom", 10, &Pure_Pursuit::odom_callback, this);
     joy_sub = nh.subscribe("/joy", 10, &Pure_Pursuit::joy_callback, this);
+    imu_sub = nh.subscribe("/imu/data", 10, &Pure_Pursuit::imu_callback, this);
 
     write_start_pub = nh.advertise<std_msgs::Bool>("/write_start_flg", 10);
     write_finish_sub = nh.subscribe("/write_finish_flg", 10, &Pure_Pursuit::write_finish_callback, this);
@@ -205,6 +227,20 @@ void Pure_Pursuit::joy_callback(const sensor_msgs::Joy& msg)
     if (msg.buttons[1] == 1){
         autonomous_start_flg = true;
     }
+}
+
+void Pure_Pursuit::imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
+{   
+    // accl and angular_vel
+    accl_x = imu_msg->linear_acceleration.x;
+    accl_y = imu_msg->linear_acceleration.y;
+    accl_z = imu_msg->linear_acceleration.z;
+    anglvel_x = imu_msg->angular_velocity.x;
+    anglvel_y = imu_msg->angular_velocity.y;
+    anglvel_z = imu_msg->angular_velocity.z;
+    
+    //std::cout << accl_x << std::endl;
+    //std::cout << anglvel_z << std::endl;
 }
 
 void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
@@ -446,7 +482,7 @@ void Pure_Pursuit::update_cmd_vel()
         curvature = std::max(minCurvature, std::min(curvature, maxCurvature));
         curvature = curvature / maxCurvature;
         //change velocity according to curvature (asteroid)
-        float target_speed = (maxVelocity-minVelocity) * pow(sin(acos(std::cbrt(curvature))), 3) + minVelocity; //[m/s]   
+        float target_speed = (maxVelocity - minVelocity) * pow(sin(acos(std::cbrt(curvature))), 3) + minVelocity; //[m/s]   
         current_vel = target_speed;
 
         float alpha = dist_sp_from_nearest / target_speed;
@@ -526,6 +562,61 @@ bool Pure_Pursuit::checkLineAndCircleIntersection(float start_x, float start_y,
     return shortest_distance < radius;
 }
 
+void Pure_Pursuit::stack_judgement()
+{
+    if (cmd_vel.linear.x != 0 || cmd_vel.angular.z != 0) {
+        if (accl_x >= -0.5 && accl_x <= 0.5) {
+            stack_flg = true;
+        } else {
+            stack_flg = false;
+        }
+
+        /*
+        if (abs(current_x - pre_current_x) <= 0.0001) {
+            stack_flg = true;
+        } else {
+            stack_flg = false;
+        }
+        */
+        //std::cout << current_x - pre_current_x << std::endl;
+    }
+
+    if (stack_flg) {
+        stack_count = stack_count + 1.0;
+        //std::cout << stack_count << std::endl;
+        if (stack_count == 500) {
+            stack_pre_x = current_x;
+            stack_pre_y = current_y;
+            //std::cout << stack_pre_x << std::endl;
+            //std::cout << stack_pre_y << std::endl;
+        }
+    } else {
+        std::cout << "FALSE" << std::endl;
+        stack_count = 0;
+    }
+
+    if (stack_count >= 500.0) {
+        // publish cmd_vel
+        cmd_vel.linear.x = 3.0;
+        cmd_vel.angular.z = 0.0;
+        cmd_vel_pub.publish(cmd_vel);
+    }
+
+    float stack_dist = 0.0;
+    if (stack_count >= 500.0) {
+        stack_dist = std::abs(std::sqrt(std::pow((current_x - stack_pre_x), 2.0) + std::pow((current_y - stack_pre_y), 2.0)));
+        //std::cout << dist << std::endl;
+    }
+    
+    if (stack_dist > 10.0) {
+        stack_flg = false;
+        stack_count = 0;
+    }
+
+    pre_current_x = current_x;
+    pre_current_y = current_y;
+}
+
 int main(int argc, char**argv)
 {
     ros::init(argc, argv, "pure_pursuit_1110");
@@ -536,6 +627,7 @@ int main(int argc, char**argv)
 		ros::spinOnce();
         if (pure_pursuit.autonomous_start_flg) {
             pure_pursuit.update_cmd_vel();
+            pure_pursuit.stack_judgement();
         }
         //pure_pursuit.update_cmd_vel();
 		loop_rate.sleep();

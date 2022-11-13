@@ -50,7 +50,7 @@ class Path_Publisher():
         self.csv_data9 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course9.csv")
         self.csv_data10 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course10.csv")
         self.csv_data11 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course11.csv")
-        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course12.csv"
+        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course12.csv")
 
         # tsukuba kakunin right path
         """
