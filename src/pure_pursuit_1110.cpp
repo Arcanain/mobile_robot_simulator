@@ -223,7 +223,9 @@ void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
 void Pure_Pursuit::update_cmd_vel()
 {
     if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
-        // index flg reset
+        /**********************************************************************
+         * path reset
+        **********************************************************************/
         if (!path_reset_index_flg) {
             // path clear
             path_x.clear();
@@ -255,6 +257,9 @@ void Pure_Pursuit::update_cmd_vel()
             ros::Duration(1).sleep(); // 1秒間停止
         }
 
+        /**********************************************************************
+         * calculate mindist index
+        **********************************************************************/
         // calculate path from current position distance
         std::vector<float> dist_from_current_pos;
         for (int index = 0; index < path_num; index++) {
@@ -290,7 +295,7 @@ void Pure_Pursuit::update_cmd_vel()
         targetwp_num.data = last_index;
         targetwp_num_pub.publish(targetwp_num);
         
-        /***********************************************************************
+        /**********************************************************************
          * check goal
         **********************************************************************/
         float goal_x = path_x[path_num - 1];
@@ -344,7 +349,7 @@ void Pure_Pursuit::update_cmd_vel()
         } 
 
         //write_start_pub.publish(write_start_flg);
-
+                                                                
         // check goal
         /*
         bool goal_flag = checkLineAndCircleIntersection(path_x[path_num - 2], path_y[path_num - 2], 
@@ -370,7 +375,24 @@ void Pure_Pursuit::update_cmd_vel()
         }
         */
 
-        // check 1[m] stop path
+        /**********************************************************************
+         * check 1[m] stop path
+        **********************************************************************/
+        if (csv_path_number.data == 2) {
+            if (!check_stop_joy_flg) {
+                float check_stop_x = path_x[path_num - 1 * 10];
+                float check_stop_y = path_y[path_num - 1 * 10];
+                const float check_stop_dist = std::abs(std::sqrt(std::pow((check_stop_x - current_x), 2.0) + std::pow((check_stop_y - current_y), 2.0)));
+                if (check_stop_dist < goal_th) {
+                    std::cout << "Check Stop!" << std::endl;
+                    cmd_vel.linear.x = 0.0;
+                    cmd_vel.angular.z = 0.0;
+                    cmd_vel_pub.publish(cmd_vel);
+                    return;
+                }
+            }
+        }
+        
         /*
         bool check_stop_flag = checkLineAndCircleIntersection(path_x[path_num - 1 * 6], path_y[path_num - 1 * 6], 
                                                               path_x[path_num - 1 * 5], path_y[path_num - 1 * 5], 
@@ -383,36 +405,6 @@ void Pure_Pursuit::update_cmd_vel()
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub.publish(cmd_vel);
             return;
-        }
-        */
-
-        // check goal
-        /*
-        float goal_x = path_x[path_num - 1];
-        float goal_y = path_y[path_num - 1];
-        const float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
-        if (goal_dist < goal_th) {
-            std::cout << "Goal!" << std::endl;
-            cmd_vel.linear.x = 0.0;
-            cmd_vel.angular.z = 0.0;
-            cmd_vel_pub.publish(cmd_vel);
-            return;
-        }
-        */
-
-        // check 1[m] stop path
-        /*
-        if (!check_stop_joy_flg) {
-            float check_stop_x = path_x[path_num - 1 * 10];
-            float check_stop_y = path_y[path_num - 1 * 10];
-            const float check_stop_dist = std::abs(std::sqrt(std::pow((check_stop_x - current_x), 2.0) + std::pow((check_stop_y - current_y), 2.0)));
-            if (check_stop_dist < goal_th) {
-                std::cout << "Check Stop!" << std::endl;
-                cmd_vel.linear.x = 0.0;
-                cmd_vel.angular.z = 0.0;
-                cmd_vel_pub.publish(cmd_vel);
-                return;
-            }
         }
         */
 
@@ -510,7 +502,7 @@ bool Pure_Pursuit::checkLineAndCircleIntersection(float start_x, float start_y,
                          end_x, end_y, 
                          &b_x, &b_y, &a_x, &a_y);
 
-    double radius = 0.1;
+    double radius = 0.3;
 
     double a = b_x - a_x;
     double b = b_y - a_y;
@@ -529,7 +521,7 @@ bool Pure_Pursuit::checkLineAndCircleIntersection(float start_x, float start_y,
     double f1 = a * (a_y - p_y) - b * (a_x - p_x);
     shortest_distance = sqrt((f1 * f1) / r2);
 
-    //std::cout << shortest_distance << std::endl;
+    std::cout << shortest_distance << std::endl;
 
     return shortest_distance < radius;
 }
