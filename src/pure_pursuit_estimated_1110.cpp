@@ -40,6 +40,7 @@
 class Pure_Pursuit
 {
     private:
+        // Publish and Subscriber
         ros::NodeHandle nh;
         ros::Publisher cmd_vel_pub;
         ros::Publisher targetwp_num_pub;
@@ -54,8 +55,10 @@ class Pure_Pursuit
         ros::Publisher write_start_pub;
         ros::Subscriber write_finish_sub;
 
-        float target_LookahedDist; // Lookahed distance for Pure Pursuit[m]
+        // Lookahed distance for Pure Pursuit[m]
+        float target_LookahedDist;
 
+        // various flag
         bool path_first_flg = false;
         bool path_num_first_flg = false;
         bool odom_first_flg = false;
@@ -69,6 +72,7 @@ class Pure_Pursuit
         bool path_reset_index_flg = false;
         bool count_flag = false;
 
+        // path, path_num, path_index
         int path_num = 0;
         int last_index = 0;
         int last_index_dummy = 0;
@@ -80,6 +84,7 @@ class Pure_Pursuit
         int goal_count = 0;
         int csv_number_count = 0;
 
+        // for stack judgement
         float stack_count = 0.0;
         float stack_pre_x = 0.0;
         float stack_pre_y = 0.0;
@@ -124,7 +129,9 @@ class Pure_Pursuit
         float anglvel_z;
 
     public:
+        // constract
         Pure_Pursuit();
+        // destract
         ~Pure_Pursuit();
         // path callback
         void path_callback(const nav_msgs::Path &path_msg);
@@ -158,7 +165,6 @@ class Pure_Pursuit
 
 Pure_Pursuit::Pure_Pursuit()
 {
-    //cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 50);
     cmd_vel_pub = nh.advertise<geometry_msgs::Twist>("/cmd_vel_automatic", 50);
     targetwp_num_pub = nh.advertise<std_msgs::Int32>("/targetwp_num", 10);
     csv_path_number_pub = nh.advertise<std_msgs::Int8>("/csv_path_number", 10);
@@ -394,6 +400,7 @@ void Pure_Pursuit::update_cmd_vel()
 
         //std::cout << goal_dist << std::endl;
 
+        // goal judgement
         if (goal_dist < goal_th) {
             std::cout << "Goal!" << std::endl;
 
@@ -406,6 +413,7 @@ void Pure_Pursuit::update_cmd_vel()
             }
         }
 
+        // stop goal flag
         if (goal_flg) {
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = 0.0;
@@ -414,6 +422,7 @@ void Pure_Pursuit::update_cmd_vel()
             ros::Duration(1).sleep(); // 1秒間停止
         } 
         
+        // move up csv file
         if (goal_flg == true && write_start_flg.data == false) {
 
             ros::Duration(1).sleep(); // 1秒間停止
