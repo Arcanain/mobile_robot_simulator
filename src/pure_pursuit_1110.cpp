@@ -41,7 +41,6 @@ class Pure_Pursuit
         bool select_path_change = false;
 
         bool goal_flg = false;
-        //bool write_start_flg = false;
         bool path_reset_index_flg = false;
         bool count_flag = false;
 
@@ -78,8 +77,6 @@ class Pure_Pursuit
         geometry_msgs::Twist cmd_vel;
         float goal_th = 0.5; //[m]
         float yaw_rate = 0.0; //[rad/s]
-
-        geometry_msgs::Twist pre_cmd_vel;
 
         // cauvature parameter
         float minCurvature = 0.0;
@@ -243,12 +240,12 @@ void Pure_Pursuit::update_cmd_vel()
 
             goal_flg = false;
             
-            // publish pre cmd_vel
-            pre_cmd_vel.linear.x = 0.15;
-            pre_cmd_vel.angular.z = 0.0;
-            cmd_vel_pub.publish(pre_cmd_vel);
+            // stop cmd_vel
+            cmd_vel.linear.x = 0.0;
+            cmd_vel.angular.z = 0.0;
+            cmd_vel_pub.publish(cmd_vel);
 
-            ros::Duration(1).sleep(); // 3秒間停止
+            ros::Duration(1).sleep(); // 1秒間停止
         }
 
         // calculate path from current position distance
@@ -268,18 +265,6 @@ void Pure_Pursuit::update_cmd_vel()
             //std::cout << "YES" << std::endl;
             last_index_dummy = pre_last_index;
         }
-    
-        /*
-        float look_ahead_filter = 0.1 * current_vel + 0.3;
-        target_LookahedDist = 0.0;
-        // look ahead distanceの更新
-        while (look_ahead_filter > target_LookahedDist) {
-            const double d_x = path_x[min_index + 1] - path_x[min_index];
-            const double d_y = path_y[min_index + 1] - path_y[min_index];
-            target_LookahedDist += std::sqrt(d_x * d_x + d_y * d_y);
-            min_index += 1;
-        }
-        */
 
         float look_ahead_filter = 0.1 * current_vel + 0.3;
         target_LookahedDist = 0.0;
@@ -324,12 +309,12 @@ void Pure_Pursuit::update_cmd_vel()
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub.publish(cmd_vel);
 
-            ros::Duration(1).sleep(); // 3秒間停止
+            ros::Duration(1).sleep(); // 1秒間停止
         } 
         
         if (goal_flg == true && write_start_flg.data == false) {
 
-            ros::Duration(3).sleep(); // 3秒間停止
+            ros::Duration(1).sleep(); // 1秒間停止
 
             count_flag = true;
 
@@ -346,7 +331,6 @@ void Pure_Pursuit::update_cmd_vel()
 
             csv_path_number_pub.publish(csv_path_number);
 
-            //write_start_flg = true;
             write_start_flg.data = true;
 
             write_start_pub.publish(write_start_flg);
