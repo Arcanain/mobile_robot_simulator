@@ -109,18 +109,6 @@ class Path_Publisher():
             rospy.sleep(1)
 
             self.write_finish_pub.publish(self.write_finish_flag)
-    
-
-        """
-        if write_start_flag:
-            if self.csv_file_number == 1:
-                self.csv_data = self.csv_data1
-            elif self.csv_file_number == 2:
-                self.csv_data = self.csv_data2
-            self.write_finish_flag.data = True
-        
-        self.write_finish_pub.publish(self.write_finish_flag)
-        """
 
     def crate_path(self):
         pose_list = self.get_poses_from_csvdata(self.csv_data)
