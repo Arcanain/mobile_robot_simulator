@@ -89,6 +89,14 @@ class Pure_Pursuit
         float minVelocity = 0.1;
         float maxVelocity = 0.3;
 
+        // for subscribe imu_data
+        float accl_x;
+        float accl_y;
+        float accl_z;
+        float anglvel_x;
+        float anglvel_y;
+        float anglvel_z;
+
     public:
         Pure_Pursuit();
         ~Pure_Pursuit();
@@ -240,6 +248,17 @@ void Pure_Pursuit::imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
     }
     //std::cout << current_yaw_euler << std::endl;
     
+    // accl and angular_vel
+    accl_x = imu_msg->linear_acceleration.x;
+    accl_y = imu_msg->linear_acceleration.y;
+    accl_z = imu_msg->linear_acceleration.z;
+    anglvel_x = imu_msg->angular_velocity.x;
+    anglvel_y = imu_msg->angular_velocity.y;
+    anglvel_z = imu_msg->angular_velocity.z;
+    
+    //std::cout << accl_x << std::endl;
+    //std::cout << anglvel_z << std::endl;
+
     imu_first_flg = true;
 }
 
