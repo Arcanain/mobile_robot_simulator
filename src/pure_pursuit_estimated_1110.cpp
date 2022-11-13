@@ -1,3 +1,17 @@
+/* Data   : 2022/11/12
+ * Author : Ramune6110
+ * ********************************************************************************
+ * SYSTEM
+ * MCU            | Raspberry Pi 4
+ * SENSOR
+ * Accel/Gyro/Mag | Witmotion
+ * Encoder        | 6.5inch In-Wheel-Motor
+ * GNSS           | ublox zed-f9p
+ * ********************************************************************************
+ */
+/**********************************************************************
+ * Include
+**********************************************************************/
 #include <ros/ros.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -17,6 +31,11 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
+/**********************************************************************
+ * Define
+**********************************************************************/
+//#define STACK_JUDGE
 
 class Pure_Pursuit
 {
@@ -652,6 +671,11 @@ void Pure_Pursuit::stack_judgement()
     pre_current_y = current_y;
 }
 
+/**
+ *******************************************************************************************
+ * MAIN Method
+ *******************************************************************************************
+ */
 int main(int argc, char**argv)
 {
     ros::init(argc, argv, "pure_pursuit_estimated_1110");
@@ -662,7 +686,11 @@ int main(int argc, char**argv)
 		ros::spinOnce();
         if (pure_pursuit.autonomous_start_flg) {
             pure_pursuit.update_cmd_vel();
-            pure_pursuit.stack_judgement();
+
+            #ifdef STACK_JUDGE
+                pure_pursuit.stack_judgement();
+            #endif
+            
         }
         //pure_pursuit.update_cmd_vel();
 		loop_rate.sleep();
