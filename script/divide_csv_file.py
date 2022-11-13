@@ -22,7 +22,7 @@ class DivideCsvFile():
         print(self.csv_file_number)
         print(self.csv_file_number_remainder)
 
-        self.offset_path_num = 3
+        self.offset_path_num = -3
 
         # path dict for csvfile
         self.path_dict = {}
@@ -50,7 +50,7 @@ class DivideCsvFile():
 
                     self.path_dict[len(self.path_dict)] = current_point
             elif csv_number == 0:
-                for index in range(csv_number * 100, csv_number * 100 + 100):
+                for index in range(csv_number * 100, csv_number * 100 + 100 - self.offset_path_num):
                     position_x = self.csv_data["x"][index]
                     position_y = self.csv_data["y"][index]
                     position_z = self.csv_data["z"][index]

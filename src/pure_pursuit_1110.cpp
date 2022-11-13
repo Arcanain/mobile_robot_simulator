@@ -217,13 +217,6 @@ void Pure_Pursuit::write_finish_callback(const std_msgs::Bool& msg)
 void Pure_Pursuit::update_cmd_vel()
 {
     if (path_first_flg == true && odom_first_flg == true && path_num != 0) {
-        
-        // path clear
-        /*
-        path_x.clear();
-        path_y.clear();
-        path_st.clear();
-        */
         // index flg reset
         if (!path_reset_index_flg) {
             // path clear
@@ -332,6 +325,8 @@ void Pure_Pursuit::update_cmd_vel()
             cmd_vel.linear.x = 0.0;
             cmd_vel.angular.z = 0.0;
             cmd_vel_pub.publish(cmd_vel);
+
+            ros::Duration(1).sleep(); // 3秒間停止
         } 
         
         if (goal_flg == true && write_start_flg.data == false) {
