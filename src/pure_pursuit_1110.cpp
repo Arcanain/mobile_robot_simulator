@@ -521,14 +521,14 @@ bool Pure_Pursuit::checkLineAndCircleIntersection(float start_x, float start_y,
     double f1 = a * (a_y - p_y) - b * (a_x - p_x);
     shortest_distance = sqrt((f1 * f1) / r2);
 
-    std::cout << shortest_distance << std::endl;
+    //std::cout << shortest_distance << std::endl;
 
     return shortest_distance < radius;
 }
 
 int main(int argc, char**argv)
 {
-    ros::init(argc, argv, "pure_pursuit_crossProblem");
+    ros::init(argc, argv, "pure_pursuit_1110");
     
     Pure_Pursuit pure_pursuit;
     ros::Rate loop_rate(50);
