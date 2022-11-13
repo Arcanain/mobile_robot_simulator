@@ -12,7 +12,7 @@ from std_msgs.msg import Bool
 
 class Path_Publisher():
     def __init__(self):
-        rospy.init_node("path_publisher_1110", anonymous=True)
+        rospy.init_node("path_publisher_left_1110", anonymous=True)
 
         # get pose data from csv file
         """
@@ -50,23 +50,7 @@ class Path_Publisher():
         self.csv_data9 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course9.csv")
         self.csv_data10 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course10.csv")
         self.csv_data11 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course11.csv")
-        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course12.csv"
-
-        # tsukuba kakunin right path
-        """
-        self.csv_data1 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course1.csv")
-        self.csv_data2 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course2.csv")
-        self.csv_data3 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course3.csv")
-        self.csv_data4 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course4.csv")
-        self.csv_data5 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course5.csv")
-        self.csv_data6 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course6.csv")
-        self.csv_data7 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course7.csv")
-        self.csv_data8 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course8.csv")
-        self.csv_data9 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course9.csv")
-        self.csv_data10 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course10.csv")
-        self.csv_data11 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course11.csv")
-        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_right_path/test_course12.csv")
-        """
+        self.csv_data12 = pd.read_csv("~/catkin_ws/src/mobile_robot_simulator/path/tsukuba_kakunin_left_path/test_course12.csv")
 
         # init csv data
         self.csv_data = self.csv_data1
