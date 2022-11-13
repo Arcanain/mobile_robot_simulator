@@ -79,6 +79,8 @@ class Pure_Pursuit
         float goal_th = 0.5; //[m]
         float yaw_rate = 0.0; //[rad/s]
 
+        geometry_msgs::Twist pre_cmd_vel;
+
         // cauvature parameter
         float minCurvature = 0.0;
         float maxCurvature = 0.5;
@@ -241,6 +243,11 @@ void Pure_Pursuit::update_cmd_vel()
 
             goal_flg = false;
             
+            // publish pre cmd_vel
+            pre_cmd_vel.linear.x = 0.15;
+            pre_cmd_vel.angular.z = 0.0;
+            cmd_vel_pub.publish(pre_cmd_vel);
+
             ros::Duration(1).sleep(); // 3秒間停止
         }
 
@@ -291,15 +298,6 @@ void Pure_Pursuit::update_cmd_vel()
         targetwp_num.data = last_index;
         targetwp_num_pub.publish(targetwp_num);
         
-        // publish select path number
-        /*
-        if (select_path_change) {
-            chnage_path_count++;
-            csv_path_number.data = csv_path_number.data + 1;
-        }
-        csv_path_number_pub.publish(csv_path_number);
-        */
-
         /***********************************************************************
          * check goal
         **********************************************************************/
@@ -307,7 +305,7 @@ void Pure_Pursuit::update_cmd_vel()
         float goal_y = path_y[path_num - 1];
         float goal_dist = std::abs(std::sqrt(std::pow((goal_x - current_x), 2.0) + std::pow((goal_y - current_y), 2.0)));
 
-        std::cout << goal_dist << std::endl;
+        //std::cout << goal_dist << std::endl;
 
         if (goal_dist < goal_th) {
             std::cout << "Goal!" << std::endl;
@@ -346,13 +344,6 @@ void Pure_Pursuit::update_cmd_vel()
                 pre_csv_path_number = csv_path_number.data;
             }
 
-            /*
-            csv_path_number.data = csv_path_number.data + 1;
-
-            pre_csv_path_number = csv_path_number.data;
-            */
-
-            //std::cout << csv_path_number.data << std::endl;
             csv_path_number_pub.publish(csv_path_number);
 
             //write_start_flg = true;
@@ -362,8 +353,6 @@ void Pure_Pursuit::update_cmd_vel()
         } 
 
         //write_start_pub.publish(write_start_flg);
-
-
 
         // check goal
         /*
@@ -451,15 +440,6 @@ void Pure_Pursuit::update_cmd_vel()
                 break;
             }
         }
-        //std::cout << abs(last_index_dummy - pre_last_index) << std::endl;
-
-        /*
-        if (abs(last_index_dummy - pre_last_index) > 10) {
-            //std::cout << "YES" << std::endl;
-            target_lookahed_x = path_x[pre_last_index + 3];
-            target_lookahed_y = path_y[pre_last_index + 3];
-        }
-        */
 
         // calculate target yaw rate
         float target_yaw = std::atan2(target_lookahed_y - current_y, target_lookahed_x - current_x);
